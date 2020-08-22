@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">IoThink</string>
+    <string name="device_dialog">DialogDevice</string>
+    <string name="ok">Aggiungi</string>
+    <string name="cancel">Annulla</string>
+    <string name="ricercaButtonStandard">Cerca nuovi dispositivi</string>
+    <string name="ricercaButtonInCorso">Ricerca in corso...</string>
+    <string name="nomeDispositivo">Nome del dispositivo</string>
+    <string name="stanzaDispositivo">Stanza del dispositivo</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_button">LOGIN</string>
+    <string name="registraion_button">REGISTER</string>
+    <string name="error_log">Email o Password non inserite.</string>
+    <string name="pwd_short">La password deve essere di almeno di 6 caratteri.</string>
+    <string name="registration_failed">Registrazione fallita.</string>
+    <string name="registration_success">Utente creato con successo.</string>
+    <string name="verify_mail">Verifica la tua email.</string>
+    <string name="do_registration">Effettua la registrazione.</string>
+</resources>

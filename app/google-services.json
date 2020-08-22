@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1061612757164",
+    "firebase_url": "https://iothinkunina-a19a0.firebaseio.com",
+    "project_id": "iothinkunina-a19a0",
+    "storage_bucket": "iothinkunina-a19a0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1061612757164:android:315100f420abd5ba25ff09",
+        "android_client_info": {
+          "package_name": "com.iot_rest_application.iothink_unina"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1061612757164-nh1dbaflh3ddk579hlfs0krjik69hti8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iot_rest_application.iothink_unina",
+            "certificate_hash": "9c9063256cfc29858149cdf33e9865a83eaae150"
+          }
+        },
+        {
+          "client_id": "1061612757164-u4ipb3ksd7pc2d1rdmvopo3s2nlkjhsn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKESOGE8WEktTpNl_P5MZfrl9SB7r9FEc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1061612757164-u4ipb3ksd7pc2d1rdmvopo3s2nlkjhsn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
