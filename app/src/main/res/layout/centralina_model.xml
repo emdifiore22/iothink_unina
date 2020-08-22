@@ -8,11 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Centralina"
-        android:textSize="24dp"
-        android:background="@color/colorPrimaryDark"
+        android:textSize="20dp"
+        android:background="@drawable/button"
         android:textColor="@android:color/white"
         android:padding="5dp"
         android:gravity="center"
         android:layout_marginVertical="5dp"
+        android:layout_marginHorizontal="5dp"
         android:layout_marginBottom="10dp"/>
 </RelativeLayout>

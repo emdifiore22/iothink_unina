@@ -7,7 +7,14 @@
     android:orientation="vertical"
     tools:context=".MainActivity"
     android:id="@+id/lin_layout"
-    android:layout_margin="30dp">
+    android:layout_margin="20dp"
+    >
+
+    <TextView
+        android:id="@+id/noHubTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"
@@ -25,7 +32,9 @@
             android:layout_height="wrap_content"
             android:text="Aggiungi nuova Centralina"
             android:onClick="addCentralina"
-            tools:ignore="OnClick" />
+            tools:ignore="OnClick"
+            android:background="@drawable/button"
+            android:textColor="@android:color/white"/>
     </RelativeLayout>
 
 </LinearLayout>

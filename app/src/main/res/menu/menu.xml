@@ -4,6 +4,7 @@
     <item
         android:icon="@drawable/ic_add"
         android:title="menu"
+        android:iconTint="@android:color/white"
         app:showAsAction="always">
         <menu>
 

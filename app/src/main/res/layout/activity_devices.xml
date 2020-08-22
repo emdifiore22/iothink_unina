@@ -9,6 +9,12 @@
     android:id="@+id/lin_layout"
     android:layout_margin="30dp">
 
+    <TextView
+        android:id="@+id/noDeviceTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"
         android:layout_width="match_parent"
@@ -23,7 +29,8 @@
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/ricercaDispositiviButton"/>
+            android:id="@+id/ricercaDispositiviButton"
+            android:background="@drawable/button"/>
     </RelativeLayout>
 
 </LinearLayout>

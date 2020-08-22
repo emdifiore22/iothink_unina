@@ -25,9 +25,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DevicesActivity" />
-        <activity android:name=".AddCentralinaActivity" />
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".DevicesActivity"
+            android:label="Lista Dispositivi"/>
+        <activity
+            android:name=".AddCentralinaActivity"
+            android:label="Aggiungi HUB"/>
+        <activity
+            android:name=".MainActivity"
+            android:label="Lista HUB">
 
         </activity>
     </application>

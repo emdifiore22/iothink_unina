@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -78,6 +79,13 @@ public class DevicesActivity extends AppCompatActivity {
         //ADAPTER
         try {
             adapter = new DeviceAdapter(this, firebaseHelper.retrieve_devices(this.nomeCentralina));
+            System.out.println("****DEBUG**** Dispositivi rilevati: " + adapter.getItemCount());
+
+            if(adapter.getItemCount() == 0){
+                TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
+                noDeviceLabel.setText("Nessun device registrato.");
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

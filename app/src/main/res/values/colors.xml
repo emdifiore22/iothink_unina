@@ -3,4 +3,9 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="weird_dreams_1">#001840</color>
+    <color name="weird_dreams_2">#003868</color>
+    <color name="weird_dreams_3">#086088</color>
+    <color name="weird_dreams_4">#507088</color>
+    <color name="weird_dreams_5">#6890a8</color>
 </resources>

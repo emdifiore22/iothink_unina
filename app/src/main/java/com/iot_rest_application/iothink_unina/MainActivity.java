@@ -1,6 +1,7 @@
 package com.iot_rest_application.iothink_unina;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
         //SETUP RECYCLER VIEW
         rv = (RecyclerView) findViewById(R.id.rv);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
 
     }
 
@@ -57,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
         //ADAPTER
         try {
             adapter = new CentralinaAdapter(this, firebaseHelper.retrieve_hub());
+
+            if(adapter.getItemCount() == 0){
+                TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
+                noHubLabel.setText("Nessun Hub registrato.");
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

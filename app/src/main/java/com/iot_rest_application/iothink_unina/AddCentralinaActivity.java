@@ -26,9 +26,9 @@ public class AddCentralinaActivity extends AppCompatActivity {
     private BarcodeDetector detector;
     private SurfaceView surfaceView;
     private CameraSource cameraSource;
-    private TextView message, deviceName;
+    private TextView message;
     private String barcode;
-    private EditText devicePin;
+    private EditText hubName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +38,8 @@ public class AddCentralinaActivity extends AppCompatActivity {
         System.out.println("****DEBUG**** ADD CENTRALINA ACTIVITY ON CREATE");
 
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
-        message = (TextView) findViewById(R.id.text_view);
-        deviceName = (TextView) findViewById(R.id.deviceName);
-        devicePin = (EditText) findViewById(R.id.devicePin);
+        message = (TextView) findViewById(R.id.detectedHubName);
+        hubName = (EditText) findViewById(R.id.hubCustomName);
 
         detector = new BarcodeDetector.Builder(getApplicationContext()).setBarcodeFormats(Barcode.QR_CODE).build();
 
@@ -76,8 +75,7 @@ public class AddCentralinaActivity extends AppCompatActivity {
                         public void run() {
                             barcode = items.valueAt(0).displayValue;
                             //String[] barcodeTokenized = barcode.split("/");
-                            //deviceName.setText(barcodeTokenized[3]);
-                            String msg = "Centralina rilevata: codice " +  barcode;
+                            String msg = "Centralina " +  barcode + " rilevata.";
                             message.setText(msg);
                         }
                     });
@@ -88,7 +86,7 @@ public class AddCentralinaActivity extends AppCompatActivity {
     private void activateCamera() {
         // Verifichiamo che sia stata concessa la permission CAMERA
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare");
+            System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare.");
             return;
         } else {
             try {
