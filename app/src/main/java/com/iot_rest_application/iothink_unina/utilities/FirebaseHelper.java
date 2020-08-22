@@ -51,26 +51,31 @@ public class FirebaseHelper {
     public ArrayList<Device> retrieve_devices(String hub) throws ExecutionException, InterruptedException {
         System.out.println("****DEBUG**** https://iothinkunina-a19a0.firebaseio.com/users/" + this.uid + "/centraline/" + hub + "/devices.json");
         String devices = new RestRequest().execute(this.dbPath + "/users/" + this.uid + "/centraline/" + hub + "/devices.json").get();
-        JsonObject jsonDevices = (JsonObject) new JsonParser().parse(devices);
 
-        this.devices_rest.clear();
+        if(!devices.equals("null")){
 
-        System.out.println(devices_rest.size());
-        System.out.println("****DEBUG**** KeySet: " + jsonDevices.keySet());
+            JsonObject jsonDevices = (JsonObject) new JsonParser().parse(devices);
 
-        for(String bt_address_device: jsonDevices.keySet()){
-            JsonObject device = (JsonObject) jsonDevices.get(bt_address_device);
-            Device d = new Device(device.get("name").toString().replace("\"", ""),
-                    device.get("bt_addr").toString().replace("\"", ""),
-                    device.get("type").toString().replace("\"", ""),
-                    device.get("uuid").toString().replace("\"", ""),
-                    device.get("nomeCustom").toString().replace("\"", ""),
-                    device.get("room").toString().replace("\"", ""),
-                    device.get("centralina").toString().replace("\"", ""));
-            this.devices_rest.add(d);
+            this.devices_rest.clear();
+
+            System.out.println(devices_rest.size());
+            System.out.println("****DEBUG**** KeySet: " + jsonDevices.keySet());
+
+            for(String bt_address_device: jsonDevices.keySet()){
+                JsonObject device = (JsonObject) jsonDevices.get(bt_address_device);
+                Device d = new Device(device.get("name").toString().replace("\"", ""),
+                        device.get("bt_addr").toString().replace("\"", ""),
+                        device.get("type").toString().replace("\"", ""),
+                        device.get("uuid").toString().replace("\"", ""),
+                        device.get("nomeCustom").toString().replace("\"", ""),
+                        device.get("room").toString().replace("\"", ""),
+                        device.get("centralina").toString().replace("\"", ""));
+                this.devices_rest.add(d);
+            }
+
+            System.out.println("****DEBUG**** DEVICE_REST_SIZE: " + this.devices_rest.size());
+
         }
-
-        System.out.println("****DEBUG**** DEVICE_REST_SIZE: " + this.devices_rest.size());
 
         return this.devices_rest;
     }
