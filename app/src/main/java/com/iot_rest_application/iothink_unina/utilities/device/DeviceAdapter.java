@@ -10,6 +10,8 @@ import android.widget.CompoundButton;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.iot_rest_application.iothink_unina.R;
@@ -42,8 +44,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
         holder.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                FirebaseUser user = mAuth.getCurrentUser();
+                String uid = user.getUid();
+
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference("users/Y27XIDnKs8dLPZKbCmjUbnCoKT83/centraline/" + d.getCentralina() + "/cmd");
+                DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/cmd");
                 if(isChecked){
                     // Write a message to the database
                     myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/on");

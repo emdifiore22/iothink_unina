@@ -74,7 +74,7 @@ public class DevicesActivity extends AppCompatActivity {
         uid = currentUser.getUid();
 
         DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-        firebaseHelper = new FirebaseHelper(db, uid);
+        firebaseHelper = FirebaseHelper.getInstance();
 
         //ADAPTER
         try {
@@ -151,7 +151,7 @@ public class DevicesActivity extends AppCompatActivity {
                             device.setNomeCustom(nomeDispositivo.getText().toString());
                             device.setRoom(stanzaDispositivo.getText().toString());
 
-                            DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/hub1/devices/" + device.getBt_addr());
+                            DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
 
                             ref.setValue(device).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
@@ -164,8 +164,8 @@ public class DevicesActivity extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
                                     DevicesActivity.rv.setAdapter(adapter);
-                        }
-                    });
+                                 }
+                            });
 
                             detectedDeviceRef.removeValue();
                             cmdRef.setValue("idle");

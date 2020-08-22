@@ -55,14 +55,17 @@ public class MainActivity extends AppCompatActivity {
         String userUid = currentUser.getUid();
 
         DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-        firebaseHelper = new FirebaseHelper(db, userUid);
+        firebaseHelper = FirebaseHelper.getInstance();
+        System.out.println("****DEBUG**** FIREBASE HELPER TOKEN ID: " + firebaseHelper.getIdToken());
         //ADAPTER
         try {
             adapter = new CentralinaAdapter(this, firebaseHelper.retrieve_hub());
 
+            TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
             if(adapter.getItemCount() == 0){
-                TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
                 noHubLabel.setText("Nessun Hub registrato.");
+            } else{
+                noHubLabel.setText("");
             }
 
         } catch (InterruptedException e) {
@@ -99,5 +102,11 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        moveTaskToBack(true);
     }
 }

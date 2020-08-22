@@ -1,6 +1,7 @@
 package com.iot_rest_application.iothink_unina;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -13,13 +14,27 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.JsonObject;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class AddCentralinaActivity extends AppCompatActivity {
 
@@ -27,8 +42,10 @@ public class AddCentralinaActivity extends AppCompatActivity {
     private SurfaceView surfaceView;
     private CameraSource cameraSource;
     private TextView message;
-    private String barcode;
+    private String nomeHardwareCentralina;
     private EditText hubName;
+    private FirebaseAuth mAuth;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +53,12 @@ public class AddCentralinaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_centralina);
 
         System.out.println("****DEBUG**** ADD CENTRALINA ACTIVITY ON CREATE");
+
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        uid = currentUser.getUid();
 
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         message = (TextView) findViewById(R.id.detectedHubName);
@@ -73,9 +96,9 @@ public class AddCentralinaActivity extends AppCompatActivity {
                 if (items.size() != 0)
                     runOnUiThread(new Runnable() {
                         public void run() {
-                            barcode = items.valueAt(0).displayValue;
+                            nomeHardwareCentralina = items.valueAt(0).displayValue;
                             //String[] barcodeTokenized = barcode.split("/");
-                            String msg = "Centralina " +  barcode + " rilevata.";
+                            String msg = "Centralina " +  nomeHardwareCentralina + " rilevata.";
                             message.setText(msg);
                         }
                     });
@@ -101,6 +124,30 @@ public class AddCentralinaActivity extends AppCompatActivity {
 
         /* Inserire altre operazioni eventuali, come la scrittura su Firebase */
 
-        AddCentralinaActivity.this.finish();
+        if(!hubName.getText().toString().isEmpty()) {
+            final String nomeUtenteCentralina = hubName.getText().toString();
+
+            // Write a message to the database
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            final DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + nomeHardwareCentralina);
+
+            myRef.child("cmd").setValue("idle").addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        myRef.child("nome").setValue(nomeUtenteCentralina).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                AddCentralinaActivity.this.finish();
+                            }
+                        });
+                    }
+                }
+            });
+
+
+        } else {
+            Toast.makeText(AddCentralinaActivity.this,R.string.nomeUtenteCentralina, Toast.LENGTH_SHORT).show();
+        }
     }
 }
