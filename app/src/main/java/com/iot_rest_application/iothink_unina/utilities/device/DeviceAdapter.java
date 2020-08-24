@@ -41,6 +41,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
 
         System.out.println("****DEBUG**** NOME CUSTOM: " +  d.getNomeCustom());
         holder.nomeDispositivo.setText(d.getNomeCustom());
+
+        if(d.getStatus().equals("on")){
+            holder.aSwitch.setChecked(true);
+        }else if(d.getStatus().equals("off")){
+            //holder.aSwitch.setChecked(true);
+        }
+
         holder.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -51,13 +58,15 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
 
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/cmd");
+                DatabaseReference ref_device_status = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/devices/" + d.getBt_addr() + "/status");
                 if(isChecked){
                     // Write a message to the database
                     myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/on");
+                    ref_device_status.setValue("on");
                 } else{
                     // Write a message to the database
                     myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/off");
-
+                    ref_device_status.setValue("off");
                 }
             }
         });

@@ -1,12 +1,17 @@
 <resources>
     <string name="app_name">IoThink</string>
     <string name="device_dialog">DialogDevice</string>
-    <string name="ok">Aggiungi</string>
+    <string name="ok">OK</string>
+    <string name="add">Aggiungi</string>
     <string name="cancel">Annulla</string>
     <string name="ricercaButtonStandard">Cerca nuovi dispositivi</string>
     <string name="ricercaButtonInCorso">Ricerca in corso...</string>
     <string name="nomeDispositivo">Nome del dispositivo</string>
     <string name="stanzaDispositivo">Stanza del dispositivo</string>
+    <string name="addRoom">Nome della stanza</string>
+    <string name="add_room_failed">Nome stanza già utilizzato</string>
+    <string name="add_room_success">Stanza aggiunta</string>
+    <string name="select_room_failed">Seleziona una stanza</string>
     <string name="login_email">Email</string>
     <string name="login_password">Password</string>
     <string name="login_button">LOGIN</string>

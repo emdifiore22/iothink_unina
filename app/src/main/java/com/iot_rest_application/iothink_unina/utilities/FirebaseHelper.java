@@ -15,6 +15,7 @@ public class FirebaseHelper {
     private String dbPath;
     private ArrayList<Centralina> centraline_rest;
     private ArrayList<Device> devices_rest;
+    private ArrayList<String> rooms;
     private String uid;
     private String idToken;
     private static FirebaseHelper firebaseHelper = null;
@@ -22,6 +23,7 @@ public class FirebaseHelper {
     private FirebaseHelper() {
         this.centraline_rest = new ArrayList<>();
         this.devices_rest = new ArrayList<>();
+        this.rooms = new ArrayList<>();
     }
 
     public static FirebaseHelper getInstance() {
@@ -56,16 +58,6 @@ public class FirebaseHelper {
         this.idToken = idToken;
     }
 
-    /*
-    public FirebaseHelper(DatabaseReference db, String uid) {
-        this.db = db;
-        this.centraline_rest = new ArrayList<>();
-        this.devices_rest = new ArrayList<>();
-        this.uid = uid;
-        this.dbPath = db.toString();
-    }
-    */
-
     public boolean checkUser() throws ExecutionException, InterruptedException {
 
         String user = new RestRequest().execute(this.dbPath + "/users/" + this.uid + ".json?auth=" + this.idToken).get();
@@ -93,7 +85,7 @@ public class FirebaseHelper {
 
             for(String centralina: jsonCentraline.keySet()){
                 JsonObject hub = (JsonObject) jsonCentraline.get(centralina);
-                Centralina c = new Centralina(hub.get("nome").toString().replace("\"", ""));
+                Centralina c = new Centralina(hub.get("nome").toString().replace("\"", ""), centralina);
                 this.centraline_rest.add(c);
             }
 
@@ -112,26 +104,47 @@ public class FirebaseHelper {
             JsonObject jsonDevices = (JsonObject) new JsonParser().parse(devices);
 
             this.devices_rest.clear();
-
             System.out.println(devices_rest.size());
             System.out.println("****DEBUG**** KeySet: " + jsonDevices.keySet());
 
             for(String bt_address_device: jsonDevices.keySet()){
                 JsonObject device = (JsonObject) jsonDevices.get(bt_address_device);
-                Device d = new Device(device.get("name").toString().replace("\"", ""),
-                        device.get("bt_addr").toString().replace("\"", ""),
+                Device d = new Device(device.get("bt_addr").toString().replace("\"", ""),
                         device.get("type").toString().replace("\"", ""),
                         device.get("uuid").toString().replace("\"", ""),
                         device.get("nomeCustom").toString().replace("\"", ""),
                         device.get("room").toString().replace("\"", ""),
-                        device.get("centralina").toString().replace("\"", ""));
+                        device.get("centralina").toString().replace("\"", ""),
+                        device.get("status").toString().replace("\"", ""));
                 this.devices_rest.add(d);
             }
-
             System.out.println("****DEBUG**** DEVICE_REST_SIZE: " + this.devices_rest.size());
 
         }
 
         return this.devices_rest;
+    }
+
+    public ArrayList<String> retrieve_rooms(String hub) throws ExecutionException, InterruptedException {
+        System.out.println("****DEBUG**** https://iothinkunina-a19a0.firebaseio.com/users/" + this.uid + "/centraline/" + hub + "/rooms.json?auth=" + this.idToken);
+        String rooms = new RestRequest().execute(this.dbPath + "/users/" + this.uid + "/centraline/" + hub + "/rooms.json?auth=" + this.idToken).get();
+        System.out.println("****DEBUG**** " + rooms);
+
+        this.rooms.clear();
+
+        if(!rooms.equals("null")){
+            JsonObject jsonCentraline = (JsonObject) new JsonParser().parse(rooms);
+
+            System.out.println(this.rooms.size());
+            System.out.println("****DEBUG**** KeySet: " + jsonCentraline.keySet());
+
+            for(String room: jsonCentraline.keySet()){
+                this.rooms.add(room.replace("\"", ""));
+            }
+
+            System.out.println("****DEBUG**** ROOM_SIZE: " + this.rooms.size());
+        }
+
+        return this.rooms;
     }
 }

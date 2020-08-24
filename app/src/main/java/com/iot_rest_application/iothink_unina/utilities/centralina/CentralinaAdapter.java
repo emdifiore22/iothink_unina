@@ -34,7 +34,8 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
 
         final Centralina c = centraline.get(position);
 
-        holder.nomeCentralina.setText(c.nome);
+        holder.nomeCentralina.setText(c.getNomeCustom());
+        holder.nomeHardwareCentralina.setText(c.getNomeHardware());
 
     }
 

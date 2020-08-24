@@ -2,13 +2,13 @@ package com.iot_rest_application.iothink_unina.utilities.device;
 
 public class Device {
 
-    public String name;
     public String bt_addr;
     public String type;
     public String uuid;
     public String nomeCustom;
     public String room;
     public String centralina;
+    public String status;
 
     public Device() {}
 
@@ -16,22 +16,22 @@ public class Device {
         this.bt_addr = bt_addr;
     }
 
-    public Device(String name, String bt_addr, String type, String uuid, String nomeCustom, String room, String centralina) {
-        this.name = name;
+    public Device(String bt_addr, String type, String uuid, String nomeCustom, String room, String centralina, String status) {
         this.bt_addr = bt_addr;
         this.type = type;
         this.uuid = uuid;
         this.nomeCustom = nomeCustom;
         this.room = room;
         this.centralina = centralina;
+        this.status = status;
     }
 
-    public String getName() {
-        return name;
+    public String getStatus() {
+        return status;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getBt_addr() {

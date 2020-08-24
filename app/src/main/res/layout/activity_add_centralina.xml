@@ -16,18 +16,16 @@
         <SurfaceView
             android:layout_width="fill_parent"
             android:layout_height="0dp"
-            android:layout_weight="90"
+            android:layout_weight="95"
             android:id="@+id/surface_view"/>
 
         <TextView
             android:id="@+id/detectedHubName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
-            android:layout_weight="5"
             android:layout_marginHorizontal="30dp"
             android:text=""
-            android:textSize="12px"/>
+            android:textSize="20dp" />
 
         <RelativeLayout
             android:layout_width="match_parent"

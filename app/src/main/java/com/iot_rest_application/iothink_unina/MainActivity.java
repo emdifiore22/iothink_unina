@@ -1,12 +1,14 @@
 package com.iot_rest_application.iothink_unina;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -77,33 +79,59 @@ public class MainActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
     }
 
-    public void addCentralina(View view) {
-        Intent intent = new Intent(this, AddCentralinaActivity.class);
-        startActivity(intent);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        inflater.inflate(R.menu.menu_activity_centralina, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
+        Intent intent;
         switch (item.getItemId()) {
             case R.id.logOut:
                 mAuth.signOut();
-                Intent intent = new Intent(this, LoginActivity.class);
+                intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 finish();
+                return true;
+            case R.id.addCentralina:
+                showHubInstructions();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    public void showHubInstructions(){
+        // Creazione del dialog per inserire il nuovo dispositivo
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+        final View view = inflater.inflate(R.layout.hub_instruction, null);
+        builder.setView(view).setTitle("Istruzioni");
+
+        // Impostazione del positive button
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                Intent intent = new Intent(MainActivity.this, AddCentralinaActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Impostazione del negative button
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                System.out.println("****DEBUG**** User cancelled the dialog");
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
