@@ -23,4 +23,6 @@
     <string name="verify_mail">Verifica la tua email.</string>
     <string name="do_registration">Effettua la registrazione.</string>
     <string name="nomeUtenteCentralina">Inserire nome della centralina</string>
+    <string name="loadingImageFailed">Caricamento immagine fallito</string>
+    <string name="loadingImageSuccess">Caricamento immagine avvenuto con successo</string>
 </resources>

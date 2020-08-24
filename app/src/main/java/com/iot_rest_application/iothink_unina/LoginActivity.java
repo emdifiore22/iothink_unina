@@ -107,7 +107,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-
     private void signInNormal() {
         if (email.getText().toString().isEmpty() || pass.getText().toString().isEmpty()) {
             Toast.makeText(getApplicationContext(), R.string.error_log, Toast.LENGTH_SHORT).show();

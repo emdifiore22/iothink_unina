@@ -1,12 +1,18 @@
 package com.iot_rest_application.iothink_unina;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +27,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,10 +36,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.device.Device;
 import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -46,6 +57,8 @@ public class DevicesActivity extends AppCompatActivity {
     private Button ricercaButton;
     private FirebaseAuth mAuth;
     private String uid;
+    private static final int TAKE_PIC_FROM_GALLERY = 1;
+    private static final int CROP_ACTIVITY = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -246,8 +259,96 @@ public class DevicesActivity extends AppCompatActivity {
                 return true;
             case R.id.addRoom:
                 showAddRoomDialog();
+                return true;
+            case R.id.addHubImage:
+                pickImage();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void pickImage(){
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        String[] mimeType = {"image/jpeg", "image/png"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeType);
+        startActivityForResult(intent, TAKE_PIC_FROM_GALLERY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        System.out.println("****DEBUG**** Request code : " + requestCode);
+        System.out.println("****DEBUG**** Result code : " + resultCode);
+
+        if(resultCode == Activity.RESULT_OK){
+            switch (requestCode){
+                case TAKE_PIC_FROM_GALLERY:
+                    Uri selectedImage = data.getData();
+                    performCrop(selectedImage);
+                    break;
+                case CROP_ACTIVITY:
+                    if(data != null){
+                        Bundle extras = data.getExtras();
+                        // get the cropped bitmap
+                        Bitmap selectedBitmap = extras.getParcelable("data");
+                        StorageReference mStorageRef;
+                        mStorageRef = FirebaseStorage.getInstance().getReference();
+
+                        StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+
+                        byte[] data_byte = baos.toByteArray();
+
+                        UploadTask uploadTask = riversRef.putBytes(data_byte);
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+                    }
+                    break;
+            }
+        }else{
+            Toast toast = Toast.makeText(this, R.string.loadingImageFailed, Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
+
+    private void performCrop(Uri picUri) {
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            // indicate image type and Uri
+            cropIntent.setDataAndType(picUri, "image/*");
+            // set crop properties here
+            cropIntent.putExtra("crop", true);
+            // indicate aspect of desired crop
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            cropIntent.putExtra("scale", true);
+            // indicate output X and Y
+            cropIntent.putExtra("outputX", 128);
+            cropIntent.putExtra("outputY", 128);
+            // retrieve data on return
+            cropIntent.putExtra("return-data", true);
+            // start the activity - we handle returning in onActivityResult
+            startActivityForResult(cropIntent, CROP_ACTIVITY);
+        }
+        // respond to users whose devices do not support the crop action
+        catch (ActivityNotFoundException anfe) {
+            // display an error message
+            String errorMessage = "Whoops - your device doesn't support the crop action!";
+            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 

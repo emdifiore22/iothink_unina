@@ -10,7 +10,7 @@
             <item
                 android:id="@+id/addCentralina"
                 android:orderInCategory="1"
-                android:title="Aggiungi Centralina" />
+                android:title="Aggiungi centralina" />
 
         </menu>
     </item>

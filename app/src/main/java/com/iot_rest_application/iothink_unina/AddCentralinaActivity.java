@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -97,6 +98,12 @@ public class AddCentralinaActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         public void run() {
                             nomeHardwareCentralina = items.valueAt(0).displayValue;
+
+                            // Get instance of Vibrator from current Context
+                            Vibrator v = (Vibrator) getSystemService(AddCentralinaActivity.this.VIBRATOR_SERVICE);
+                            // Vibrate for 400 milliseconds
+                            v.vibrate(10);
+
                             //String[] barcodeTokenized = barcode.split("/");
                             String msg = "Centralina " +  nomeHardwareCentralina + " rilevata.";
                             message.setText(msg);

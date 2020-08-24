@@ -11,7 +11,10 @@
                 android:id="@+id/addRoom"
                 android:orderInCategory="1"
                 android:title="Aggiungi Stanza" />
-
+            <item
+                android:id="@+id/addHubImage"
+                android:orderInCategory="1"
+                android:title="Imposta immagine centralina" />
         </menu>
     </item>
     <item

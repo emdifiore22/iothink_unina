@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ public class CentralinaViewHolder extends RecyclerView.ViewHolder implements Vie
 
     TextView nomeCentralina;
     TextView nomeHardwareCentralina;
+    ImageView hubImage;
 
     private final Context context;
 
@@ -25,6 +27,7 @@ public class CentralinaViewHolder extends RecyclerView.ViewHolder implements Vie
         //deviceImage = (ImageView) itemView.findViewById(R.id.deviceImage);
         nomeCentralina = (TextView) itemView.findViewById(R.id.nomeCentralina);
         nomeHardwareCentralina = (TextView) itemView.findViewById(R.id.nomeHardwareCentralina);
+        hubImage = (ImageView) itemView.findViewById(R.id.hubImage);
 
         context = itemView.getContext();
 
