@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.Filter;
+import android.widget.Filterable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,14 +20,16 @@ import com.iot_rest_application.iothink_unina.R;
 
 import java.util.ArrayList;
 
-public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
+public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implements Filterable {
 
-    Context c;
-    ArrayList<Device> devices;
+    private Context c;
+    private ArrayList<Device> devices;
+    private ArrayList<Device> devicesFull;
 
     public DeviceAdapter(Context c, ArrayList<Device> devices) {
         this.c = c;
         this.devices = devices;
+        devicesFull = new ArrayList<>(devices);
     }
 
     @NonNull
@@ -60,11 +64,11 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
                 DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/cmd");
                 DatabaseReference ref_device_status = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/devices/" + d.getBt_addr() + "/status");
                 if(isChecked){
-                    // Write a message to the database
+                    // Inviare CMD: ON su Firebase
                     myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/on");
                     ref_device_status.setValue("on");
                 } else{
-                    // Write a message to the database
+                    // Inviare CMD: OFF su Firebase
                     myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/off");
                     ref_device_status.setValue("off");
                 }
@@ -78,4 +82,34 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> {
         return devices.size();
     }
 
+    @Override
+    public Filter getFilter() {
+        return exampleFilter;
+    }
+
+    private Filter exampleFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            ArrayList<Device> filteredList = new ArrayList<>();
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(devicesFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (Device device : devicesFull) {
+                    if (device.getNomeCustom().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(device);
+                    }
+                }
+            }
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            return results;
+        }
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            devices.clear();
+            devices.addAll((ArrayList) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

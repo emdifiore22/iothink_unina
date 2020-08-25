@@ -25,4 +25,9 @@
     <string name="nomeUtenteCentralina">Inserire nome della centralina</string>
     <string name="loadingImageFailed">Caricamento immagine fallito</string>
     <string name="loadingImageSuccess">Caricamento immagine avvenuto con successo</string>
+    <string name="aggiungiStanza">Aggiungi stanza</string>
+    <string name="aggiungiImmagineCentralina">Imposta immagine centralina</string>
+    <string name="cercaDispositivo">Cerca dispositivo</string>
+    <string name="cercaCentralina">Cerca centralina</string>
+    <string name="signOut">Log Out</string>
 </resources>

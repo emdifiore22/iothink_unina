@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.DialogInterface;
@@ -14,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -99,14 +101,32 @@ public class MainActivity extends AppCompatActivity {
             case R.id.addCentralina:
                 showHubInstructions();
                 return true;
+            case R.id.action_search_centralina:
+                SearchView searchView = (SearchView) item.getActionView();
+                searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        adapter.getFilter().filter(newText);
+                        return false;
+                    }
+                });
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
     public void showHubInstructions(){
-        // Creazione del dialog per inserire il nuovo dispositivo
+        // Creazione del dialog che mostra le istruzioni per l'inserimento di una nuova centralina
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
         final View view = inflater.inflate(R.layout.hub_instruction, null);
         builder.setView(view).setTitle("Istruzioni");

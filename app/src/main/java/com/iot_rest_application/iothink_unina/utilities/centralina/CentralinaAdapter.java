@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,17 +20,20 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.iot_rest_application.iothink_unina.R;
+import com.iot_rest_application.iothink_unina.utilities.device.Device;
 
 import java.util.ArrayList;
 
-public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder> {
+public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder> implements Filterable {
 
-    Context c;
-    ArrayList<Centralina> centraline;
+    private Context c;
+    private ArrayList<Centralina> centraline;
+    private ArrayList<Centralina> centralineFull;
 
     public CentralinaAdapter(Context c, ArrayList<Centralina> centraline) {
         this.c = c;
         this.centraline = centraline;
+        centralineFull = new ArrayList<>(centraline);
     }
 
     @NonNull
@@ -82,4 +87,35 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
     public int getItemCount() {
         return centraline.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return exampleFilter;
+    }
+
+    private Filter exampleFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            ArrayList<Centralina> filteredList = new ArrayList<>();
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(centralineFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (Centralina centralina : centralineFull) {
+                    if (centralina.getNomeCustom().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(centralina);
+                    }
+                }
+            }
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            return results;
+        }
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            centraline.clear();
+            centraline.addAll((ArrayList) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

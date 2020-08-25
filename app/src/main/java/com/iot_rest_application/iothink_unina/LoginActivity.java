@@ -41,33 +41,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         email = findViewById(R.id.email_text);
         pass = findViewById(R.id.pass_text);
 
-        final FirebaseUser user = mAuth.getCurrentUser();
-
-        if (user == null){
-            // No user, send to login.
-            Log.d("LOGIN","Nessun utente");
-        } else {
-            //finishAffinity();
-            user.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                @Override
-                public void onComplete(@NonNull Task<GetTokenResult> task) {
-                    if (task.isSuccessful()){
-                        String idToken = task.getResult().getToken();
-                        String uid = user.getUid();
-                        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-
-                        FirebaseHelper firebaseHelper = FirebaseHelper.getInstance();
-                        firebaseHelper.setDb(db);
-                        firebaseHelper.setIdToken(idToken);
-                        firebaseHelper.setUid(uid);
-
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    }
-                }
-            });
-
-        }
-
     }
 
     private void createAccountNormal() {
@@ -97,7 +70,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         });
 
                             } else {
-                                // If sign in fails, display a message to the user.
+                                // If sign up fails, display a message to the user.
                                 Log.i("IoThink registration", "createUserWithEmail:failure", task.getException());
                                 Toast.makeText(LoginActivity.this,R.string.registration_failed,
                                         Toast.LENGTH_SHORT).show();
@@ -184,7 +157,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //finishAffinity();
     }
 
-    //Funzioni on clic dei bottoni.
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

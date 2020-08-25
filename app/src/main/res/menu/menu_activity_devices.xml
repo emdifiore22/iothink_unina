@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="Cerca Dispositivo">
+        <item
+            android:icon="@drawable/ic_search"
+            android:id="@+id/action_search_device"
+            android:title="@string/cercaDispositivo"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"
+            app:showAsAction="ifRoom|collapseActionView" />
+    </item>
+
     <item
         android:icon="@drawable/ic_add"
         android:title="Menu aggiungi stanza"
@@ -10,20 +21,20 @@
             <item
                 android:id="@+id/addRoom"
                 android:orderInCategory="1"
-                android:title="Aggiungi Stanza" />
+                android:title="@string/aggiungiStanza" />
             <item
                 android:id="@+id/addHubImage"
                 android:orderInCategory="1"
-                android:title="Imposta immagine centralina" />
+                android:title="@string/aggiungiImmagineCentralina" />
         </menu>
     </item>
+
     <item
         android:title="Menu Log Out">
-        <!-- "file" submenu -->
         <item
             android:id="@+id/logOut"
             android:orderInCategory="1"
-            android:title="Log Out" />
+            android:title="@string/signOut" />
     </item>
 
 </menu>

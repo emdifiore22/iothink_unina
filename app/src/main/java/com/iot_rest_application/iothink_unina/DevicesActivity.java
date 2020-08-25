@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,7 +47,6 @@ import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class DevicesActivity extends AppCompatActivity {
@@ -110,8 +111,7 @@ public class DevicesActivity extends AppCompatActivity {
             }else{
                 noDeviceLabel.setText("");
             }
-
-             */
+            */
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -243,6 +243,7 @@ public class DevicesActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_activity_devices, menu);
+        //MenuItem searchItem = menu.findItem(R.id.action_search);
         return true;
     }
 
@@ -262,6 +263,23 @@ public class DevicesActivity extends AppCompatActivity {
                 return true;
             case R.id.addHubImage:
                 pickImage();
+                return true;
+            case R.id.action_search_device:
+                SearchView searchView = (SearchView) item.getActionView();
+                searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        adapter.getFilter().filter(newText);
+                        return false;
+                    }
+                });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -353,7 +371,7 @@ public class DevicesActivity extends AppCompatActivity {
     }
 
     public void showAddRoomDialog(){
-        // Creazione del dialog per inserire il nuovo dispositivo
+        // Creazione del dialog per inserire una nuova stanza
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View view = inflater.inflate(R.layout.add_room, null);
