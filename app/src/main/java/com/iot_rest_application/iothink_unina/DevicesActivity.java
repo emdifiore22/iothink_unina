@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -62,6 +63,7 @@ public class DevicesActivity extends AppCompatActivity {
     private String uid;
     private static final int TAKE_PIC_FROM_GALLERY = 1;
     private static final int CROP_ACTIVITY = 2;
+    private static final int TAKE_PIC_FROM_CAMERA = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,7 +278,8 @@ public class DevicesActivity extends AppCompatActivity {
                 showAddRoomDialog();
                 return true;
             case R.id.addHubImage:
-                pickImage();
+                showImagePickerDialog();
+                //pickImage();
                 return true;
             case R.id.action_search_device:
                 SearchView searchView = (SearchView) item.getActionView();
@@ -300,7 +303,36 @@ public class DevicesActivity extends AppCompatActivity {
         }
     }
 
-    public void pickImage(){
+
+    public void showImagePickerDialog(){
+        final String[] options = {"Fotocamera", "Galleria"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Scegli foto");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // the user clicked on colors[which]
+                System.out.println("****DEBUG**** È stato cliccato " + options[which]);
+                if(options[which].equals("Fotocamera")){
+                    pickImageFromCamera();
+                }else{
+                    pickImageFromGallery();
+                }
+            }
+        });
+        builder.show();
+    }
+
+    public void pickImageFromCamera(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //intent.setType("image/*");
+        //String[] mimeType = {"image/jpeg", "image/png"};
+        //intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeType);
+        startActivityForResult(intent, TAKE_PIC_FROM_CAMERA);
+    }
+
+    public void pickImageFromGallery(){
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         String[] mimeType = {"image/jpeg", "image/png"};
@@ -313,11 +345,12 @@ public class DevicesActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         System.out.println("****DEBUG**** Request code : " + requestCode);
         System.out.println("****DEBUG**** Result code : " + resultCode);
-
+        Uri selectedImage;
         if(resultCode == Activity.RESULT_OK){
             switch (requestCode){
                 case TAKE_PIC_FROM_GALLERY:
-                    Uri selectedImage = data.getData();
+                case TAKE_PIC_FROM_CAMERA:
+                    selectedImage = data.getData();
                     performCrop(selectedImage);
                     break;
                 case CROP_ACTIVITY:

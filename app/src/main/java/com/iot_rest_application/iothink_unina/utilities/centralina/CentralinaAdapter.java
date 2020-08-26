@@ -61,14 +61,15 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
 
         // Create a storage reference from our app
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-        StorageReference islandRef = storageRef.child("users/" + uid + "/" + holder.nomeHardwareCentralina.getText().toString() + ".png");
+        StorageReference imageRef = storageRef.child("users/" + uid + "/" + holder.nomeHardwareCentralina.getText().toString() + ".png");
 
         final long ONE_MEGABYTE = 1024 * 1024;
-        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+
+        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
                 // Data for "images/island.jpg" is returns, use this as needed
-                System.out.println("+***DEBUG**** Caricamento immagine effettuato con succeso");
+                System.out.println("+***DEBUG**** Caricamento immagine effettuato con successo");
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 holder.hubImage.setImageBitmap(bitmap);
             }
