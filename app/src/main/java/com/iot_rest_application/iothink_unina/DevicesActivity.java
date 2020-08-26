@@ -46,8 +46,6 @@ import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.device.Device;
 import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -259,7 +257,6 @@ public class DevicesActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_activity_devices, menu);
-        //MenuItem searchItem = menu.findItem(R.id.action_search);
         return true;
     }
 
@@ -279,7 +276,6 @@ public class DevicesActivity extends AppCompatActivity {
                 return true;
             case R.id.addHubImage:
                 showImagePickerDialog();
-                //pickImage();
                 return true;
             case R.id.action_search_device:
                 SearchView searchView = (SearchView) item.getActionView();
@@ -312,7 +308,6 @@ public class DevicesActivity extends AppCompatActivity {
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // the user clicked on colors[which]
                 System.out.println("****DEBUG**** È stato cliccato " + options[which]);
                 if(options[which].equals("Fotocamera")){
                     pickImageFromCamera();
@@ -326,9 +321,6 @@ public class DevicesActivity extends AppCompatActivity {
 
     public void pickImageFromCamera(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //intent.setType("image/*");
-        //String[] mimeType = {"image/jpeg", "image/png"};
-        //intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeType);
         startActivityForResult(intent, TAKE_PIC_FROM_CAMERA);
     }
 
@@ -350,10 +342,8 @@ public class DevicesActivity extends AppCompatActivity {
             switch (requestCode){
                 case TAKE_PIC_FROM_GALLERY:
                 case TAKE_PIC_FROM_CAMERA:
-                    selectedImage = data.getData();
-                    performCrop(selectedImage);
-                    break;
-                case CROP_ACTIVITY:
+                    //selectedImage = data.getData();
+                    //performCrop(selectedImage);
                     if(data != null){
                         Bundle extras = data.getExtras();
                         // get the cropped bitmap
@@ -382,6 +372,38 @@ public class DevicesActivity extends AppCompatActivity {
                         });
                     }
                     break;
+                case CROP_ACTIVITY:
+                    /*
+                    if(data != null){
+                        Bundle extras = data.getExtras();
+                        // get the cropped bitmap
+                        Bitmap selectedBitmap = extras.getParcelable("data");
+                        StorageReference mStorageRef;
+                        mStorageRef = FirebaseStorage.getInstance().getReference();
+
+                        StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+
+                        byte[] data_byte = baos.toByteArray();
+
+                        UploadTask uploadTask = riversRef.putBytes(data_byte);
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+                    }
+                    break;
+
+                     */
             }
         }else{
             Toast toast = Toast.makeText(this, R.string.loadingImageFailed, Toast.LENGTH_SHORT);
