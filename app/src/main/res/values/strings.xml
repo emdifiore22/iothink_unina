@@ -30,4 +30,8 @@
     <string name="cercaDispositivo">Cerca dispositivo</string>
     <string name="cercaCentralina">Cerca centralina</string>
     <string name="signOut">Log Out</string>
+    <string name="erroreDevice">Dispositivo non raggiungibile</string>
+    <string name="qrCodeNotFound">Scannerizza il QRCode della centralina</string>
+    <string name="permissionGranted">Permesso fotocamera concesso</string>
+    <string name="permissionNotGranted">Permesso fotocamera non concesso</string>
 </resources>

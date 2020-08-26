@@ -45,6 +45,8 @@ import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.device.Device;
 import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -95,8 +97,14 @@ public class DevicesActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();
 
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
         firebaseHelper = FirebaseHelper.getInstance();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        System.out.println("****DEBUG**** DEVICES ACTIVITY ON START");
 
         //ADAPTER
         try {
@@ -105,13 +113,12 @@ public class DevicesActivity extends AppCompatActivity {
             TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
 
             rv.setAdapter(adapter);
-            /*
+
             if(adapter.getItemCount() == 0){
                 noDeviceLabel.setText("Nessun device registrato.");
             }else{
                 noDeviceLabel.setText("");
             }
-            */
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -119,12 +126,18 @@ public class DevicesActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-    }
+        try {
+            ArrayList<String> rooms = firebaseHelper.retrieve_rooms(nomeCentralina);
+            if(rooms.isEmpty()){
+                System.out.println("****DEBUG**** ROOMS IS EMPTY");
+                showAddRoomDialog();
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        System.out.println("****DEBUG**** DEVICES ACTIVITY ON START");
     }
 
     @Override
@@ -185,7 +198,8 @@ public class DevicesActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
                             System.out.println("****DEBUG**** User clicked OK button");
-
+                            TextView noDeviceView = (TextView) findViewById(R.id.noDeviceTextView);
+                            noDeviceView.setText("");
                             String stanzaDispositivo = roomSpinner.getSelectedItem().toString();
 
                             if(!stanzaDispositivo.equals("Seleziona stanza")){

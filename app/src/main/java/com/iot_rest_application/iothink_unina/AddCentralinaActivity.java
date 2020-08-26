@@ -47,6 +47,7 @@ public class AddCentralinaActivity extends AppCompatActivity {
     private EditText hubName;
     private FirebaseAuth mAuth;
     private String uid;
+    private final int REQUEST_PERMISSION_CAMERA = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +82,19 @@ public class AddCentralinaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) { }
+            public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+            }
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) { cameraSource.stop(); }
+            public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+                cameraSource.stop();
+            }
         });
 
         detector.setProcessor(new Detector.Processor<Barcode>() {
             @Override
-            public void release() { }
+            public void release() {
+            }
 
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
@@ -102,10 +107,10 @@ public class AddCentralinaActivity extends AppCompatActivity {
                             // Get instance of Vibrator from current Context
                             Vibrator v = (Vibrator) getSystemService(AddCentralinaActivity.this.VIBRATOR_SERVICE);
                             // Vibrate for 400 milliseconds
-                            v.vibrate(10);
+                            v.vibrate(100);
 
                             //String[] barcodeTokenized = barcode.split("/");
-                            String msg = "Centralina " +  nomeHardwareCentralina + " rilevata.";
+                            String msg = "Centralina " + nomeHardwareCentralina + " rilevata.";
                             message.setText(msg);
                         }
                     });
@@ -117,6 +122,7 @@ public class AddCentralinaActivity extends AppCompatActivity {
         // Verifichiamo che sia stata concessa la permission CAMERA
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare.");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CAMERA);
             return;
         } else {
             try {
@@ -127,34 +133,55 @@ public class AddCentralinaActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PERMISSION_CAMERA:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(AddCentralinaActivity.this, R.string.permissionGranted, Toast.LENGTH_SHORT).show();
+                    activateCamera();
+                } else {
+                    Toast.makeText(AddCentralinaActivity.this, R.string.permissionNotGranted, Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
     public void addNewCentralina(View view) {
 
         /* Inserire altre operazioni eventuali, come la scrittura su Firebase */
 
-        if(!hubName.getText().toString().isEmpty()) {
-            final String nomeUtenteCentralina = hubName.getText().toString();
+        if(nomeHardwareCentralina != null){
+            if(!hubName.getText().toString().isEmpty()) {
+                final String nomeUtenteCentralina = hubName.getText().toString();
 
-            // Write a message to the database
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            final DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + nomeHardwareCentralina);
+                // Write a message to the database
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + nomeHardwareCentralina);
 
-            myRef.child("cmd").setValue("idle").addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
-                        myRef.child("nome").setValue(nomeUtenteCentralina).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                AddCentralinaActivity.this.finish();
-                            }
-                        });
+                myRef.child("cmd").setValue("idle").addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            myRef.child("nome").setValue(nomeUtenteCentralina).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    AddCentralinaActivity.this.finish();
+                                }
+                            });
+                        }
                     }
-                }
-            });
+                });
 
 
-        } else {
-            Toast.makeText(AddCentralinaActivity.this,R.string.nomeUtenteCentralina, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(AddCentralinaActivity.this,R.string.nomeUtenteCentralina, Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            Toast.makeText(AddCentralinaActivity.this,R.string.qrCodeNotFound, Toast.LENGTH_SHORT).show();
         }
+
+
     }
 }

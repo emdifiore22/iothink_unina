@@ -9,7 +9,7 @@
             android:id="@+id/action_search_device"
             android:title="@string/cercaDispositivo"
             app:actionViewClass="androidx.appcompat.widget.SearchView"
-            app:showAsAction="ifRoom|collapseActionView" />
+            app:showAsAction="always|collapseActionView" />
     </item>
 
     <item

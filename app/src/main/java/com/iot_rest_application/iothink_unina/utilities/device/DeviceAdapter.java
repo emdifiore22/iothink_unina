@@ -8,14 +8,21 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.iot_rest_application.iothink_unina.R;
 
 import java.util.ArrayList;
@@ -40,37 +47,167 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implem
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DeviceViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final DeviceViewHolder holder, int position) {
         final Device d = devices.get(position);
 
         System.out.println("****DEBUG**** NOME CUSTOM: " +  d.getNomeCustom());
         holder.nomeDispositivo.setText(d.getNomeCustom());
 
-        if(d.getStatus().equals("on")){
+
+        if(d.getStatus().equals("on") || d.getStatus().equals("reset/on")){
             holder.aSwitch.setChecked(true);
-        }else if(d.getStatus().equals("off")){
-            //holder.aSwitch.setChecked(true);
+            setDeviceImage(holder, true);
+        }else if(d.getStatus().equals("off") || d.getStatus().equals("reset/off")){
+            holder.aSwitch.setChecked(false);
+            setDeviceImage(holder, false);
         }
 
         holder.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                System.out.println("****DEBUG**** SWITCH CAMBIA STATO");
+                if(buttonView.isPressed()){
+                    System.out.println("****DEBUG**** HO PREMUTO");
+                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    String uid = user.getUid();
 
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String uid = user.getUid();
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/cmd");
+                    System.out.println("****DEBUG**** Database CMD reference : " + myRef);
+                    final DatabaseReference ref_device_status = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/devices/" + d.getBt_addr() + "/status");
+                    System.out.println("****DEBUG**** Database DEVICE_STATUS reference : " + ref_device_status);
 
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/cmd");
-                DatabaseReference ref_device_status = database.getReference("users/" + uid + "/centraline/" + d.getCentralina() + "/devices/" + d.getBt_addr() + "/status");
-                if(isChecked){
-                    // Inviare CMD: ON su Firebase
-                    myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/on");
-                    ref_device_status.setValue("on");
-                } else{
-                    // Inviare CMD: OFF su Firebase
-                    myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/off");
-                    ref_device_status.setValue("off");
+                    if(isChecked){
+
+                        holder.aSwitch.setClickable(false);
+                        Toast.makeText(DeviceAdapter.this.c, "Accensione " + d.nomeCustom , Toast.LENGTH_LONG).show();
+
+                        // OFF - Reset/OFF -> ON
+                        System.out.println("****DEBUG**** CHECKED TRUE");
+
+                        // Inviare CMD: ON su Firebase
+                        myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/on").addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    System.out.println("****DEBUG**** Invio comando ON effettuato");
+                                }else{
+                                    System.out.println("****DEBUG**** Invio comando ON non effettuato");
+                                }
+                            }
+                        });
+
+                        System.out.println("****DEBUG**** " + d.getBt_addr() + "/" + d.getUuid() + "/on");
+
+                        // Read from the database
+                        ref_device_status.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                // This method is called once with the initial value and again
+                                // whenever data at this location is updated.
+                                String value = dataSnapshot.getValue(String.class);
+
+                                if(value.equals("off") || value.equals("reset/off") || value.equals("on")){
+
+                                    //System.out.println("****DEBUG**** Comando ON inviato correttamente");
+
+                                    holder.aSwitch.setClickable(true);
+
+                                    if(value.equals("on")){
+                                        setDeviceImage(holder, true);
+                                    }
+
+                                }else if (value.equals("error")){
+
+                                    System.out.println("****DEBUG**** Centralina ha inviato error");
+
+                                    //toast
+                                    Toast.makeText(DeviceAdapter.this.c, R.string.erroreDevice, Toast.LENGTH_SHORT).show();
+
+                                    //scrittura sullo status del dispositivo
+                                    ref_device_status.setValue("reset/off");
+                                    holder.aSwitch.setChecked(false);
+                                    holder.aSwitch.setClickable(true);
+                                    ref_device_status.removeEventListener(this);
+                                }
+
+                                //Log.d(TAG, "Value is: " + value);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError error) {
+                                ref_device_status.removeEventListener(this);
+                                // Failed to read value
+                                //Log.w(TAG, "Failed to read value.", error.toException());
+                            }
+                        });
+
+                    } else{
+                        holder.aSwitch.setClickable(false);
+                        Toast.makeText(DeviceAdapter.this.c, "Spegnimento " + d.nomeCustom , Toast.LENGTH_LONG).show();
+
+                        // ON - Reset/ON -> OFF
+                        System.out.println("****DEBUG**** CHECKED FALSE");
+
+                        // Inviare CMD: OFF su Firebase
+                        myRef.setValue(d.getBt_addr() + "/" + d.getUuid() + "/off").addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    System.out.println("****DEBUG**** Invio comando OFF effettuato");
+                                }else{
+                                    System.out.println("****DEBUG**** Invio comando OFF non effettuato");
+                                }
+                            }
+                        });
+
+                        System.out.println("****DEBUG**** " + d.getBt_addr() + "/" + d.getUuid() + "/off");
+
+                        // Read from the database
+                        ref_device_status.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                // This method is called once with the initial value and again
+                                // whenever data at this location is updated.
+                                String value = dataSnapshot.getValue(String.class);
+
+                                if(value.equals("on") || value.equals("reset/on") || value.equals("off")){
+
+                                    //System.out.println("****DEBUG**** Comando OFF inviato correttamente");
+
+                                    holder.aSwitch.setClickable(true);
+
+                                    if(value.equals("off")){
+                                        setDeviceImage(holder, false);
+                                    }
+
+                                }else if (value.equals("error")){
+                                    System.out.println("****DEBUG**** Centralina ha inviato error");
+
+                                    //toast
+                                    Toast.makeText(DeviceAdapter.this.c, R.string.erroreDevice, Toast.LENGTH_SHORT).show();
+
+                                    //scrittura sullo status del dispositivo
+                                    ref_device_status.setValue("reset/on");
+                                    holder.aSwitch.setChecked(true);
+                                    holder.aSwitch.setClickable(true);
+                                    ref_device_status.removeEventListener(this);
+                                }
+
+                                //Log.d(TAG, "Value is: " + value);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError error) {
+                                ref_device_status.removeEventListener(this);
+                                // Failed to read value
+                                //Log.w(TAG, "Failed to read value.", error.toException());
+                            }
+                        });
+                    }
+                }else{
+                    System.out.println("****DEBUG**** CAMBIO SENZA PREMERE");
                 }
             }
         });
@@ -80,6 +217,48 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implem
     @Override
     public int getItemCount() {
         return devices.size();
+    }
+
+    private void setDeviceImage(DeviceViewHolder holder, boolean status){
+
+        Drawable dr;
+
+        if(status){
+            System.out.println("****DEBUG**** Set image on");
+            dr = c.getResources().getDrawable(R.drawable.led_on);
+        }else{
+            System.out.println("****DEBUG**** Set image off");
+            dr = c.getResources().getDrawable(R.drawable.led_off);
+        }
+
+        holder.deviceImage.setImageDrawable(dr);
+
+        /*System.out.println("SET DEVICE IMAGE: " + type);
+        switch (type){
+            case "Led":{
+                if(cmd.equals("on")) dr = c.getResources().getDrawable(R.drawable.led_on);
+                else if(cmd.equals("off"))  dr = c.getResources().getDrawable(R.drawable.led_off);
+                break;
+            }
+            case "Lampadario":{
+                if(cmd.equals("on")) dr = c.getResources().getDrawable(R.drawable.lampadario_on);
+                else if(cmd.equals("off"))  dr = c.getResources().getDrawable(R.drawable.lampadario_off);
+                break;
+            }
+            case "Porta":{
+                if(cmd.equals("on")) dr = c.getResources().getDrawable(R.drawable.door_opened);
+                else if(cmd.equals("off"))  dr = c.getResources().getDrawable(R.drawable.door_closed);
+                break;
+            }
+            default:{
+                if(cmd.equals("on")) dr = c.getResources().getDrawable(R.drawable.led_on);
+                else if(cmd.equals("off"))  dr = c.getResources().getDrawable(R.drawable.led_off);
+                break;
+            }
+        }
+        */
+
+
     }
 
     @Override
