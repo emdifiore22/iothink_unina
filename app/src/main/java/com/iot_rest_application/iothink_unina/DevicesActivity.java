@@ -13,6 +13,7 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -47,6 +48,7 @@ import com.iot_rest_application.iothink_unina.utilities.device.Device;
 import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -321,6 +323,8 @@ public class DevicesActivity extends AppCompatActivity {
 
     public void pickImageFromCamera(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        String[] mimeType = {"image/jpeg", "image/png"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeType);
         startActivityForResult(intent, TAKE_PIC_FROM_CAMERA);
     }
 
@@ -341,23 +345,50 @@ public class DevicesActivity extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK){
             switch (requestCode){
                 case TAKE_PIC_FROM_GALLERY:
+                    selectedImage = data.getData();
+                    if(data != null){
+                        Bundle extras = data.getExtras();
+                        // get the cropped bitmap
+                        Bitmap selectedBitmap = null;
+                        try {
+                            selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                            Bitmap resized = Bitmap.createScaledBitmap(selectedBitmap, 300, 300, true);
+
+                            StorageReference mStorageRef;
+                            mStorageRef = FirebaseStorage.getInstance().getReference();
+                            StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            resized.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                            byte[] data_byte = baos.toByteArray();
+                            UploadTask uploadTask = riversRef.putBytes(data_byte);
+                            uploadTask.addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                }
+                            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
+                                    toast.show();
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
                 case TAKE_PIC_FROM_CAMERA:
-                    //selectedImage = data.getData();
-                    //performCrop(selectedImage);
+                    selectedImage = data.getData();
                     if(data != null){
                         Bundle extras = data.getExtras();
                         // get the cropped bitmap
                         Bitmap selectedBitmap = extras.getParcelable("data");
                         StorageReference mStorageRef;
                         mStorageRef = FirebaseStorage.getInstance().getReference();
-
                         StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
-
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-
                         byte[] data_byte = baos.toByteArray();
-
                         UploadTask uploadTask = riversRef.putBytes(data_byte);
                         uploadTask.addOnFailureListener(new OnFailureListener() {
                             @Override
@@ -371,6 +402,7 @@ public class DevicesActivity extends AppCompatActivity {
                             }
                         });
                     }
+                    //performCrop(selectedImage);
                     break;
                 case CROP_ACTIVITY:
                     /*
@@ -380,14 +412,10 @@ public class DevicesActivity extends AppCompatActivity {
                         Bitmap selectedBitmap = extras.getParcelable("data");
                         StorageReference mStorageRef;
                         mStorageRef = FirebaseStorage.getInstance().getReference();
-
                         StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
-
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-
                         byte[] data_byte = baos.toByteArray();
-
                         UploadTask uploadTask = riversRef.putBytes(data_byte);
                         uploadTask.addOnFailureListener(new OnFailureListener() {
                             @Override
