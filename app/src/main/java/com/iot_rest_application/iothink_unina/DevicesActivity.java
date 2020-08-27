@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -86,14 +87,7 @@ public class DevicesActivity extends AppCompatActivity {
             }
         });
 
-        Bundle b = getIntent().getExtras();
-        this.nomeCentralina = "";
-        if(b != null) {
-            this.nomeCentralina = b.getString("nomeCentralina");
-        }
-
         System.out.println("****DEBUG**** DEVICES ACTIVITY ON CREATE");
-        System.out.println("****DEBUG**** NOME CENTRALINA: " + this.nomeCentralina);
 
         //SETUP RECYCLER VIEW
         rv = (RecyclerView) findViewById(R.id.rv);
@@ -111,24 +105,25 @@ public class DevicesActivity extends AppCompatActivity {
         super.onStart();
         System.out.println("****DEBUG**** DEVICES ACTIVITY ON START");
 
-        //ADAPTER
-        try {
-            adapter = new DeviceAdapter(this, firebaseHelper.retrieve_devices(this.nomeCentralina));
-            System.out.println("****DEBUG**** Dispositivi rilevati: " + adapter.getItemCount());
-            TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
+        Bundle b = getIntent().getExtras();
+        this.nomeCentralina = "";
+        if(b != null) {
+            this.nomeCentralina = b.getString("nomeCentralina");
+        }
 
-            rv.setAdapter(adapter);
+        System.out.println("****DEBUG**** NOME CENTRALINA: " + this.nomeCentralina);
 
-            if(adapter.getItemCount() == 0){
-                noDeviceLabel.setText("Nessun device registrato.");
-            }else{
-                noDeviceLabel.setText("");
-            }
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("/users/" + uid + "/centraline/" + this.nomeCentralina + "/devices");
+        adapter = new DeviceAdapter(this, dbRef);
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        rv.setAdapter(adapter);
+
+        TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
+
+        if(adapter.getItemCount() == 0){
+            noDeviceLabel.setText("Nessun device registrato.");
+        }else{
+            noDeviceLabel.setText("");
         }
 
         try {
@@ -142,7 +137,6 @@ public class DevicesActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -214,25 +208,15 @@ public class DevicesActivity extends AppCompatActivity {
                                 device.setStatus("off");
                                 DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
 
-                                ref.setValue(device).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        try {
-                                            adapter = new DeviceAdapter(DevicesActivity.this, firebaseHelper.retrieve_devices(DevicesActivity.this.nomeCentralina));
-                                        } catch (ExecutionException e) {
-                                            e.printStackTrace();
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                        DevicesActivity.rv.setAdapter(adapter);
-                                    }
-                                });
+                                ref.setValue(device);
 
                                 detectedDeviceRef.removeValue();
                                 cmdRef.setValue("idle");
                             }else{
                                 Toast.makeText(DevicesActivity.this, R.string.select_room_failed, Toast.LENGTH_SHORT).show();
                             }
+
+                            dialog.dismiss();
                         }
                     });
 
@@ -241,11 +225,17 @@ public class DevicesActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             // User cancelled the dialog
                             System.out.println("****DEBUG**** User cancelled the dialog");
+
+                            dialog.dismiss();
                         }
                     });
 
                     AlertDialog dialog = builder.create();
-                    dialog.show();
+
+                    if(!((Activity) DevicesActivity.this).isFinishing()){
+                        dialog.show();
+                    }
+
                 }
 
             }
@@ -543,4 +533,9 @@ public class DevicesActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        //DevicesActivity.this.finish();
+    }
 }

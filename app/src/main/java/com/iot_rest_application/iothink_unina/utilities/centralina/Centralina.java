@@ -4,7 +4,7 @@ public class Centralina {
 
     private String nomeCustom;
     private String nomeHardware;
-    private String bt_address;
+    private String cmd;
 
     public Centralina() { }
 
@@ -30,11 +30,11 @@ public class Centralina {
         this.nomeHardware = nomeHardware;
     }
 
-    public String getBt_address() {
-        return bt_address;
+    public String getCmd() {
+        return cmd;
     }
 
-    public void setBt_address(String bt_address) {
-        this.bt_address = bt_address;
+    public void setCmd(String cmd) {
+        this.cmd = cmd;
     }
 }

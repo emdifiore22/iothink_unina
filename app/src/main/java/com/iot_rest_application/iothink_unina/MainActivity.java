@@ -1,7 +1,5 @@
 package com.iot_rest_application.iothink_unina;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -23,8 +21,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.centralina.CentralinaAdapter;
-
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,27 +53,21 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         String userUid = currentUser.getUid();
 
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
         firebaseHelper = FirebaseHelper.getInstance();
         System.out.println("****DEBUG**** FIREBASE HELPER TOKEN ID: " + firebaseHelper.getIdToken());
-        //ADAPTER
-        try {
-            adapter = new CentralinaAdapter(this, firebaseHelper.retrieve_hub());
 
-            TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
-            if(adapter.getItemCount() == 0){
-                noHubLabel.setText("Nessun Hub registrato.");
-            } else{
-                noHubLabel.setText("");
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("/users/" + userUid + "/centraline");
+        adapter = new CentralinaAdapter(this, dbRef);
 
         rv.setAdapter(adapter);
+
+        TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
+        if(adapter.getItemCount() == 0){
+            noHubLabel.setText("Nessun Hub registrato.");
+        } else{
+            noHubLabel.setText("");
+        }
+
     }
 
     @Override

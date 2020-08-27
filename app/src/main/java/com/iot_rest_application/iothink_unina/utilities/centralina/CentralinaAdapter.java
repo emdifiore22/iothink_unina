@@ -17,6 +17,10 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.iot_rest_application.iothink_unina.R;
@@ -34,6 +38,36 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
         this.c = c;
         this.centraline = centraline;
         centralineFull = new ArrayList<>(centraline);
+    }
+
+    public CentralinaAdapter(Context c, DatabaseReference dbRef) {
+        this.c = c;
+        this.centraline = new ArrayList<>();
+        centralineFull = new ArrayList<>();
+
+        dbRef.addValueEventListener(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                CentralinaAdapter.this.centraline.clear();
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+
+                    String nomeHardware = postSnapshot.getKey().toString();
+                    String nomeCustom = postSnapshot.child("nome").getValue().toString();
+
+                    System.out.println("****DEBUG**** nomeHardware: " + nomeHardware);
+                    System.out.println("****DEBUG**** nomeCustom: " + nomeCustom);
+
+                    Centralina centralina = new Centralina(nomeCustom, nomeHardware);
+                    centraline.add(centralina);
+                    centralineFull.add(centralina);
+                }
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @NonNull

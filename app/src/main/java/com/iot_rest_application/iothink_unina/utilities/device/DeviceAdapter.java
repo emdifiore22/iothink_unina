@@ -27,6 +27,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.iot_rest_application.iothink_unina.DevicesActivity;
 import com.iot_rest_application.iothink_unina.R;
+import com.iot_rest_application.iothink_unina.utilities.centralina.Centralina;
+import com.iot_rest_application.iothink_unina.utilities.centralina.CentralinaAdapter;
 
 import java.util.ArrayList;
 
@@ -40,6 +42,30 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implem
         this.c = c;
         this.devices = devices;
         devicesFull = new ArrayList<>(devices);
+    }
+
+    public DeviceAdapter(Context c, DatabaseReference dbRef) {
+        this.c = c;
+        this.devices = new ArrayList<>();
+        devicesFull = new ArrayList<>();
+
+        dbRef.addValueEventListener(new ValueEventListener() {
+            public void onDataChange(DataSnapshot snapshot) {
+                DeviceAdapter.this.devices.clear();
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    Device device = postSnapshot.getValue(Device.class);
+                    System.out.println("****DEBUG**** Device BT ADDRESS: " + device.getBt_addr());
+                    devices.add(device);
+                    devicesFull.add(device);
+                }
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @NonNull
