@@ -5,15 +5,17 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -64,6 +66,7 @@ public class DevicesActivity extends AppCompatActivity {
     private static final int TAKE_PIC_FROM_GALLERY = 1;
     private static final int CROP_ACTIVITY = 2;
     private static final int TAKE_PIC_FROM_CAMERA = 3;
+    private final int REQUEST_PERMISSION_CAMERA = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -311,13 +314,22 @@ public class DevicesActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 System.out.println("****DEBUG**** È stato cliccato " + options[which]);
+
                 if(options[which].equals("Fotocamera")){
-                    pickImageFromCamera();
+                    if (ActivityCompat.checkSelfPermission(DevicesActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare.");
+                        ActivityCompat.requestPermissions(DevicesActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CAMERA);
+                        return;
+                    } else {
+                        pickImageFromCamera();
+                    }
+
                 }else{
                     pickImageFromGallery();
                 }
             }
         });
+
         builder.show();
     }
 
