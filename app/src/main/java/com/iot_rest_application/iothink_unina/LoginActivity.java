@@ -13,9 +13,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.FirebaseUserMetadata;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.RestRequest;
 
@@ -91,54 +95,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                             if (task.isSuccessful()) {
                                 FirebaseUser currentUser = mAuth.getCurrentUser();
-                                // Sign in success, update UI
-                                currentUser.getIdToken(true)
-                                        .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                                            public void onComplete(@NonNull Task<GetTokenResult> task) {
-                                                if (task.isSuccessful()) {
-                                                    String idToken = task.getResult().getToken();
-                                                    System.out.println("****DEBUG**** USER TOKEN: " + idToken);
+                                final String uid = currentUser.getUid();
+                                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                                DatabaseReference db = firebaseDatabase.getReference("users");
 
+                                db.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if(!snapshot.child(uid).exists()){
+                                            System.out.println("****DEBUG**** NEW USER");
+                                            FirebaseDatabase database = FirebaseDatabase.getInstance();
+                                            DatabaseReference myRef = database.getReference("users/");
+                                            myRef.child(uid).setValue(0);
 
-                                                    FirebaseUser user = mAuth.getCurrentUser();
-                                                    if(user!= null && user.isEmailVerified()){
-                                                        //finishAffinity();
+                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                        }else{
+                                            System.out.println("****DEBUG**** OLD USER");
+                                        }
+                                    }
 
-                                                        String uid = user.getUid();
-                                                        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-                                                        FirebaseHelper firebaseHelper = FirebaseHelper.getInstance();
-                                                        firebaseHelper.setDb(db);
-                                                        firebaseHelper.setIdToken(idToken);
-                                                        firebaseHelper.setUid(uid);
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
 
-                                                        boolean trovato = false;
-
-                                                        try {
-                                                            trovato = firebaseHelper.checkUser();
-
-                                                            if(!trovato){
-                                                                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                                                                DatabaseReference myRef = database.getReference("users/");
-                                                                System.out.println("****DEBUG**** FIRST USER LOGIN");
-                                                                myRef.child(uid).setValue(0);
-                                                            }
-                                                        } catch (ExecutionException e) {
-                                                            e.printStackTrace();
-                                                        } catch (InterruptedException e) {
-                                                            e.printStackTrace();
-                                                        }
-
-                                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                                    }else{
-                                                        Toast.makeText(LoginActivity.this,R.string.verify_mail,
-                                                                Toast.LENGTH_SHORT).show();
-                                                    }
-                                                    // ...
-                                                } else {
-                                                    // Handle error -> task.getException();
-                                                }
-                                            }
-                                        });
+                                    }
+                                });
 
                             } else {
                                 // If sign in fails, display a message to the user.
