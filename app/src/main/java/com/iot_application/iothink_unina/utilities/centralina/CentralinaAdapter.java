@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina.utilities.centralina;
+package com.iot_application.iothink_unina.utilities.centralina;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,8 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.iot_rest_application.iothink_unina.R;
-import com.iot_rest_application.iothink_unina.utilities.device.Device;
+import com.iot_application.iothink_unina.R;
 
 import java.util.ArrayList;
 

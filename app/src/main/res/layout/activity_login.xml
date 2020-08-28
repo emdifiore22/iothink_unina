@@ -11,10 +11,16 @@
     android:layout_margin="20dp">
 
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/iot_logo" />
+
     <EditText
         android:id="@+id/TextEditInv4"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="10dp"
         android:layout_weight="1.08"
         android:inputType="text"
         android:textColor="@android:color/background_light"
@@ -26,7 +32,7 @@
     <EditText
         android:id="@+id/email_text"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="15dp"
         android:layout_gravity="center"
         android:layout_weight="2"
         android:ems="10"
@@ -42,7 +48,7 @@
     <EditText
         android:id="@+id/pass_text"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="15dp"
         android:layout_weight="2"
         android:layout_gravity="center"
         android:hint="@string/login_password"
@@ -69,7 +75,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="20dp"
             android:orientation="horizontal"
             android:layout_weight="1.5"
             android:weightSum="4.1">
@@ -82,7 +88,9 @@
                 android:text="@string/login_button"
                 android:layout_marginHorizontal="5dp"
                 android:textColor="@android:color/white"
-                android:textColorLink="@android:color/darker_gray" />
+                android:textColorLink="@android:color/darker_gray"
+                />
+
             <Button
                 android:id="@+id/reg_button"
                 android:layout_width="wrap_content"

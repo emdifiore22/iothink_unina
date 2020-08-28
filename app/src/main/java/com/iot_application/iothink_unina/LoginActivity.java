@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina;
+package com.iot_application.iothink_unina;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 

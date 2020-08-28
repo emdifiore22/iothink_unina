@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina.utilities.centralina;
+package com.iot_application.iothink_unina.utilities.centralina;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,8 +9,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.iot_rest_application.iothink_unina.DevicesActivity;
-import com.iot_rest_application.iothink_unina.R;
+import com.iot_application.iothink_unina.DevicesActivity;
+import com.iot_application.iothink_unina.R;
 
 public class CentralinaViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 

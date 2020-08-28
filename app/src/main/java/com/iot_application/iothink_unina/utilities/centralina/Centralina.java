@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina.utilities.centralina;
+package com.iot_application.iothink_unina.utilities.centralina;
 
 public class Centralina {
 

@@ -1,14 +1,14 @@
-package com.iot_rest_application.iothink_unina.utilities.device;
+package com.iot_application.iothink_unina.utilities.device;
 
 public class Device {
 
-    public String bt_addr;
-    public String type;
-    public String uuid;
-    public String nomeCustom;
-    public String room;
-    public String centralina;
-    public String status;
+    private String bt_addr;
+    private String type;
+    private String uuid;
+    private String nomeCustom;
+    private String room;
+    private String centralina;
+    private String status;
 
     public Device() {}
 

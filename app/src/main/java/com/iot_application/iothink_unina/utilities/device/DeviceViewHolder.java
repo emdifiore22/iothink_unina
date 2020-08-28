@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina.utilities.device;
+package com.iot_application.iothink_unina.utilities.device;
 
 import android.content.Context;
 import android.view.View;
@@ -9,12 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.iot_rest_application.iothink_unina.R;
+import com.iot_application.iothink_unina.R;
 
 public class DeviceViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-    //ImageView deviceImage;
     TextView nomeDispositivo;
+    TextView nomeStanza;
     Switch aSwitch;
     ImageView deviceImage;
     private final Context context;
@@ -24,6 +24,7 @@ public class DeviceViewHolder extends RecyclerView.ViewHolder implements View.On
 
         //deviceImage = (ImageView) itemView.findViewById(R.id.deviceImage);
         nomeDispositivo = (TextView) itemView.findViewById(R.id.nomeDevice);
+        nomeStanza = (TextView) itemView.findViewById(R.id.nomeStanza);
         aSwitch = (Switch) itemView.findViewById(R.id.switchComando);
         deviceImage = (ImageView) itemView.findViewById(R.id.deviceImage);
         context = itemView.getContext();

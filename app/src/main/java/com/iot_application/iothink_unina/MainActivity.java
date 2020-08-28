@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina;
+package com.iot_application.iothink_unina;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,12 +14,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.TextView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.iot_rest_application.iothink_unina.utilities.centralina.CentralinaAdapter;
+import com.iot_application.iothink_unina.utilities.centralina.CentralinaAdapter;
 
 public class MainActivity extends AppCompatActivity {
 

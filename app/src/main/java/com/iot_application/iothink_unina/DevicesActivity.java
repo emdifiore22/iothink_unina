@@ -1,4 +1,4 @@
-package com.iot_rest_application.iothink_unina;
+package com.iot_application.iothink_unina;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,8 +45,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.iot_rest_application.iothink_unina.utilities.device.Device;
-import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
+import com.iot_application.iothink_unina.utilities.device.Device;
+import com.iot_application.iothink_unina.utilities.device.DeviceAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
