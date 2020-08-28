@@ -1,5 +1,6 @@
 package com.iot_rest_application.iothink_unina.utilities.device;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -58,6 +60,15 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implem
                     devices.add(device);
                     devicesFull.add(device);
                 }
+
+                TextView noDeviceLabel = (TextView) ((Activity) DeviceAdapter.this.c).findViewById(R.id.noDeviceTextView);
+
+                if(devices.isEmpty()){
+                    noDeviceLabel.setText("Nessun device registrato.");
+                } else {
+                    noDeviceLabel.setText("");
+                }
+
                 notifyDataSetChanged();
             }
 

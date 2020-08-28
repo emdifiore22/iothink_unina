@@ -13,18 +13,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.FirebaseUserMetadata;
-import com.google.firebase.auth.GetTokenResult;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
-import com.iot_rest_application.iothink_unina.utilities.RestRequest;
-
-import java.util.concurrent.ExecutionException;
-
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,6 +58,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                 if (task.isSuccessful()) {
                                                     Toast.makeText(LoginActivity.this,R.string.registration_success,
                                                             Toast.LENGTH_SHORT).show();
+                                                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                                                    FirebaseUser user = mAuth.getCurrentUser();
+                                                    System.out.println("****DEBUG**** USER UID: " + user.getUid());
+
+                                                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                                                    DatabaseReference myRef = database.getReference("users/");
+                                                    myRef.child(user.getUid()).setValue(0);
                                                     Log.d("Firebase Mail:", "Email sent.");
                                                 }
                                             }
@@ -94,31 +91,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         public void onComplete(@NonNull Task<AuthResult> task) {
 
                             if (task.isSuccessful()) {
-                                FirebaseUser currentUser = mAuth.getCurrentUser();
-                                final String uid = currentUser.getUid();
-                                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                                DatabaseReference db = firebaseDatabase.getReference("users");
 
-                                db.addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if(!snapshot.child(uid).exists()){
-                                            System.out.println("****DEBUG**** NEW USER");
-                                            FirebaseDatabase database = FirebaseDatabase.getInstance();
-                                            DatabaseReference myRef = database.getReference("users/");
-                                            myRef.child(uid).setValue(0);
-
-                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                        }else{
-                                            System.out.println("****DEBUG**** OLD USER");
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
+                                if(mAuth.getCurrentUser()!= null && mAuth.getCurrentUser().isEmailVerified()) {
+                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                } else {
+                                    Toast.makeText(LoginActivity.this,R.string.verify_mail,
+                                            Toast.LENGTH_SHORT).show();
+                                }
 
                             } else {
                                 // If sign in fails, display a message to the user.

@@ -1,20 +1,13 @@
 package com.iot_rest_application.iothink_unina;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 
 public class InitActivity extends AppCompatActivity {
 
@@ -37,23 +30,7 @@ public class InitActivity extends AppCompatActivity {
                 }
             }, 1000);
         } else {
-            user.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                @Override
-                public void onComplete(@NonNull Task<GetTokenResult> task) {
-                    if (task.isSuccessful()){
-                        String idToken = task.getResult().getToken();
-                        String uid = user.getUid();
-                        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-
-                        FirebaseHelper firebaseHelper = FirebaseHelper.getInstance();
-                        firebaseHelper.setDb(db);
-                        firebaseHelper.setIdToken(idToken);
-                        firebaseHelper.setUid(uid);
-
-                        startActivity(new Intent(InitActivity.this, MainActivity.class));
-                    }
-                }
-            });
+            startActivity(new Intent(InitActivity.this, MainActivity.class));
         }
     }
 }

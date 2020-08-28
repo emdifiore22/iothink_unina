@@ -1,5 +1,6 @@
 package com.iot_rest_application.iothink_unina.utilities.centralina;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,6 +62,15 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
                     centraline.add(centralina);
                     centralineFull.add(centralina);
                 }
+
+                TextView noHubLabel = (TextView) ((Activity) CentralinaAdapter.this.c).findViewById(R.id.noHubTextView);
+
+                if(centraline.isEmpty()){
+                    noHubLabel.setText("Nessun Hub registrato.");
+                } else {
+                    noHubLabel.setText("");
+                }
+
                 notifyDataSetChanged();
             }
 

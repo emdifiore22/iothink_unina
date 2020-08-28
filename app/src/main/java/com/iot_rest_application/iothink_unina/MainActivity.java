@@ -19,12 +19,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.centralina.CentralinaAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FirebaseHelper firebaseHelper;
     private CentralinaAdapter adapter;
     private RecyclerView rv;
     private FirebaseAuth mAuth;
@@ -53,20 +51,19 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         String userUid = currentUser.getUid();
 
-        firebaseHelper = FirebaseHelper.getInstance();
-        System.out.println("****DEBUG**** FIREBASE HELPER TOKEN ID: " + firebaseHelper.getIdToken());
-
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("/users/" + userUid + "/centraline");
         adapter = new CentralinaAdapter(this, dbRef);
 
         rv.setAdapter(adapter);
 
+        /*
         TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
         if(adapter.getItemCount() == 0){
             noHubLabel.setText("Nessun Hub registrato.");
         } else{
             noHubLabel.setText("");
         }
+        */
 
     }
 

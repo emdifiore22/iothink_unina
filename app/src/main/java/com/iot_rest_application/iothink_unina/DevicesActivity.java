@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -46,24 +45,21 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.iot_rest_application.iothink_unina.utilities.FirebaseHelper;
 import com.iot_rest_application.iothink_unina.utilities.device.Device;
 import com.iot_rest_application.iothink_unina.utilities.device.DeviceAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 public class DevicesActivity extends AppCompatActivity {
 
-    private FirebaseHelper firebaseHelper;
     private DeviceAdapter adapter;
-    private static RecyclerView rv;
     private String nomeCentralina;
     private Button ricercaButton;
     private FirebaseAuth mAuth;
     private String uid;
+    private static RecyclerView rv;
     private static final int TAKE_PIC_FROM_GALLERY = 1;
     private static final int CROP_ACTIVITY = 2;
     private static final int TAKE_PIC_FROM_CAMERA = 3;
@@ -96,8 +92,6 @@ public class DevicesActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();
 
-        firebaseHelper = FirebaseHelper.getInstance();
-
     }
 
     @Override
@@ -118,6 +112,7 @@ public class DevicesActivity extends AppCompatActivity {
 
         rv.setAdapter(adapter);
 
+        /*
         TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
 
         if(adapter.getItemCount() == 0){
@@ -125,18 +120,27 @@ public class DevicesActivity extends AppCompatActivity {
         }else{
             noDeviceLabel.setText("");
         }
+        */
 
-        try {
-            ArrayList<String> rooms = firebaseHelper.retrieve_rooms(nomeCentralina);
-            if(rooms.isEmpty()){
-                System.out.println("****DEBUG**** ROOMS IS EMPTY");
-                showAddRoomDialog();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference db = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/");
+
+        db.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(!snapshot.child("rooms").exists()){
+                    System.out.println("****DEBUG**** ROOMS IS EMPTY");
+                    showAddRoomDialog();
+                }else{
+                    System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
+                }
             }
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override
@@ -169,7 +173,7 @@ public class DevicesActivity extends AppCompatActivity {
                     ricercaButton.setText(R.string.ricercaButtonStandard);
 
                     // Creazione del dialog per inserire il nuovo dispositivo
-                    AlertDialog.Builder builder = new AlertDialog.Builder(DevicesActivity.this);
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(DevicesActivity.this);
                     LayoutInflater inflater = DevicesActivity.this.getLayoutInflater();
                     final View view = inflater.inflate(R.layout.dialog_device, null);
                     builder.setView(view)
@@ -178,63 +182,77 @@ public class DevicesActivity extends AppCompatActivity {
 
                     final EditText nomeDispositivo = (EditText) view.findViewById(R.id.newDeviceName);
                     final Spinner roomSpinner = (Spinner) view.findViewById(R.id.roomSpinner);
-                    ArrayAdapter<String> spinnerArrayAdapter = null;
-                    try {
 
-                        ArrayList<String> rooms = firebaseHelper.retrieve_rooms(DevicesActivity.this.nomeCentralina);
-                        rooms.add(0, "Seleziona stanza");
-                        spinnerArrayAdapter = new ArrayAdapter<>(DevicesActivity.this, android.R.layout.simple_spinner_dropdown_item, rooms );
-                        roomSpinner.setAdapter(spinnerArrayAdapter);
 
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                    DatabaseReference db = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/rooms");
+                    final ArrayList<String> rooms = new ArrayList<>();
+                    rooms.add(0, "Seleziona stanza");
 
-                    // Impostazione del positive button
-                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User clicked OK button
-                            System.out.println("****DEBUG**** User clicked OK button");
-                            TextView noDeviceView = (TextView) findViewById(R.id.noDeviceTextView);
-                            noDeviceView.setText("");
-                            String stanzaDispositivo = roomSpinner.getSelectedItem().toString();
+                    db.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            final Spinner roomSpinner = (Spinner) view.findViewById(R.id.roomSpinner);
+                            ArrayAdapter<String> spinnerArrayAdapter = null;
 
-                            if(!stanzaDispositivo.equals("Seleziona stanza")){
-                                device.setCentralina(DevicesActivity.this.nomeCentralina);
-                                device.setNomeCustom(nomeDispositivo.getText().toString());
-                                device.setRoom(stanzaDispositivo);
-                                device.setStatus("off");
-                                DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
-
-                                ref.setValue(device);
-
-                                detectedDeviceRef.removeValue();
-                                cmdRef.setValue("idle");
-                            }else{
-                                Toast.makeText(DevicesActivity.this, R.string.select_room_failed, Toast.LENGTH_SHORT).show();
+                            for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                                String room = postSnapshot.getKey().toString();
+                                rooms.add(room);
                             }
 
-                            dialog.dismiss();
+                            spinnerArrayAdapter = new ArrayAdapter<>(DevicesActivity.this, android.R.layout.simple_spinner_dropdown_item, rooms);
+                            roomSpinner.setAdapter(spinnerArrayAdapter);
+
+                            // Impostazione del positive button
+                            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                    System.out.println("****DEBUG**** User clicked OK button");
+                                    TextView noDeviceView = (TextView) findViewById(R.id.noDeviceTextView);
+                                    noDeviceView.setText("");
+                                    String stanzaDispositivo = roomSpinner.getSelectedItem().toString();
+
+                                    if(!stanzaDispositivo.equals("Seleziona stanza")){
+                                        device.setCentralina(DevicesActivity.this.nomeCentralina);
+                                        device.setNomeCustom(nomeDispositivo.getText().toString());
+                                        device.setRoom(stanzaDispositivo);
+                                        device.setStatus("off");
+                                        DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
+
+                                        ref.setValue(device);
+
+                                        detectedDeviceRef.removeValue();
+                                        cmdRef.setValue("idle");
+                                    }else{
+                                        Toast.makeText(DevicesActivity.this, R.string.select_room_failed, Toast.LENGTH_SHORT).show();
+                                    }
+
+                                    dialog.dismiss();
+                                }
+                            });
+
+                            // Impostazione del negative button
+                            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                    System.out.println("****DEBUG**** User cancelled the dialog");
+
+                                    dialog.dismiss();
+                                }
+                            });
+
+                            AlertDialog dialog = builder.create();
+
+                            if(!((Activity) DevicesActivity.this).isFinishing()){
+                                dialog.show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
                         }
                     });
-
-                    // Impostazione del negative button
-                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                            System.out.println("****DEBUG**** User cancelled the dialog");
-
-                            dialog.dismiss();
-                        }
-                    });
-
-                    AlertDialog dialog = builder.create();
-
-                    if(!((Activity) DevicesActivity.this).isFinishing()){
-                        dialog.show();
-                    }
 
                 }
 
@@ -481,42 +499,50 @@ public class DevicesActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 // Controlli ed inserimento su Firebase
                 EditText roomNameView = (EditText) view.findViewById(R.id.roomName);
-                String roomName = roomNameView.getText().toString().toLowerCase();
+                final String roomName = roomNameView.getText().toString().toLowerCase();
                 System.out.println("****DEBUG**** Room: " + roomName );
 
-                try {
-                    ArrayList<String> rooms = firebaseHelper.retrieve_rooms(DevicesActivity.this.nomeCentralina);
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                final DatabaseReference dbRef = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/rooms");
 
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + DevicesActivity.this.nomeCentralina + "/rooms");
+                final ArrayList<String> rooms = new ArrayList<>();
+                dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                    if(rooms.isEmpty()){
-                        System.out.println("****DEBUG**** ROOMS IS EMPTY");
-                        myRef.child(roomName).setValue(0).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(DevicesActivity.this, R.string.add_room_success, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }else{
-                        System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
-                        if(!rooms.contains(roomName)){
-                            myRef.child(roomName).setValue(0).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                            String room = postSnapshot.getKey().toString();
+                            rooms.add(room);
+                        }
+
+                        if(rooms.isEmpty()){
+                            System.out.println("****DEBUG**** ROOMS IS EMPTY");
+                            dbRef.child(roomName).setValue(0).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     Toast.makeText(DevicesActivity.this, R.string.add_room_success, Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }else{
-                            Toast.makeText(DevicesActivity.this, R.string.add_room_failed, Toast.LENGTH_SHORT).show();
+                            System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
+                            if(!rooms.contains(roomName)){
+                                dbRef.child(roomName).setValue(0).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(DevicesActivity.this, R.string.add_room_success, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }else{
+                                Toast.makeText(DevicesActivity.this, R.string.add_room_failed, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
 
             }
         });
@@ -530,6 +556,15 @@ public class DevicesActivity extends AppCompatActivity {
         });
 
         AlertDialog dialog = builder.create();
+
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                DevicesActivity.this.finish();
+            }
+        });
+
+        dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }
 
