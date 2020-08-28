@@ -22,7 +22,6 @@ public class DeviceViewHolder extends RecyclerView.ViewHolder implements View.On
     public DeviceViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        //deviceImage = (ImageView) itemView.findViewById(R.id.deviceImage);
         nomeDispositivo = (TextView) itemView.findViewById(R.id.nomeDevice);
         nomeStanza = (TextView) itemView.findViewById(R.id.nomeStanza);
         aSwitch = (Switch) itemView.findViewById(R.id.switchComando);
@@ -34,7 +33,7 @@ public class DeviceViewHolder extends RecyclerView.ViewHolder implements View.On
 
     @Override
     public void onClick(View view) {
-        System.out.println("****DEBUG**** Selezionato dispositivo: " + this.nomeDispositivo.getText().toString());
-        System.out.println("****DEBUG**** CONTEXT: " + context);
+        //System.out.println("****DEBUG**** Selezionato dispositivo: " + this.nomeDispositivo.getText().toString());
+        //System.out.println("****DEBUG**** CONTEXT: " + context);
     }
 }

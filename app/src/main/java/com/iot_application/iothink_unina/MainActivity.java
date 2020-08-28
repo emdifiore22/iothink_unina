@@ -30,17 +30,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
-
         setContentView(R.layout.activity_main);
         System.out.println("*****DEBUG***** MAIN ACTIVITY ON CREATE.");
 
-        //SETUP RECYCLER VIEW
-        rv = (RecyclerView) findViewById(R.id.rv);
-        rv.setLayoutManager(new GridLayoutManager(this, 2));
-
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -51,24 +45,19 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         String userUid = currentUser.getUid();
 
+        // Creazione RecyclerViewer per la visualizzazione delle centraline utente.
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("/users/" + userUid + "/centraline");
         adapter = new CentralinaAdapter(this, dbRef);
 
+        // Setup View
+        rv = (RecyclerView) findViewById(R.id.rv);
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
         rv.setAdapter(adapter);
-
-        /*
-        TextView noHubLabel = (TextView) findViewById(R.id.noHubTextView);
-        if(adapter.getItemCount() == 0){
-            noHubLabel.setText("Nessun Hub registrato.");
-        } else{
-            noHubLabel.setText("");
-        }
-        */
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Creazione menu in Top Bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_activity_centralina, menu);
         return true;
@@ -86,9 +75,12 @@ public class MainActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.addCentralina:
+                // Visualizzazione istruzioni per l'aggiunta della centralina
                 showHubInstructions();
                 return true;
             case R.id.action_search_centralina:
+
+                // Creazione meccanismo di ricerca delle centraline
                 SearchView searchView = (SearchView) item.getActionView();
                 searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -110,9 +102,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showHubInstructions(){
+
         // Creazione del dialog che mostra le istruzioni per l'inserimento di una nuova centralina
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-
         LayoutInflater inflater = MainActivity.this.getLayoutInflater();
         final View view = inflater.inflate(R.layout.hub_instruction, null);
         builder.setView(view).setTitle("Istruzioni");
@@ -140,7 +132,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
+        super.onBackPressed();
+
+        // Evita il ritorno a LoginActivity
         moveTaskToBack(true);
     }
 }

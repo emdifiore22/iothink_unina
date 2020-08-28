@@ -14,7 +14,14 @@
         android:id="@+id/noHubTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="" />
+        android:text=""
+        android:background="@color/weird_dreams_6"
+        android:textColor="#000"
+        android:padding="8dp"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginVertical="10dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"

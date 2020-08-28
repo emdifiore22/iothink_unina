@@ -34,13 +34,11 @@ import java.io.IOException;
 
 public class AddCentralinaActivity extends AppCompatActivity {
 
-    private BarcodeDetector detector;
     private SurfaceView surfaceView;
     private CameraSource cameraSource;
     private TextView message;
     private String nomeHardwareCentralina;
-    private EditText hubName;
-    private FirebaseAuth mAuth;
+    private EditText nomeUtenteCentralina;
     private String uid;
     private final int REQUEST_PERMISSION_CAMERA = 1;
 
@@ -52,19 +50,20 @@ public class AddCentralinaActivity extends AppCompatActivity {
         System.out.println("****DEBUG**** ADD CENTRALINA ACTIVITY ON CREATE");
 
         // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
+        // Inizializzazione utente corrente
         FirebaseUser currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();
 
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         message = (TextView) findViewById(R.id.detectedHubName);
-        hubName = (EditText) findViewById(R.id.hubCustomName);
+        nomeUtenteCentralina = (EditText) findViewById(R.id.hubCustomName);
 
-        detector = new BarcodeDetector.Builder(getApplicationContext()).setBarcodeFormats(Barcode.QR_CODE).build();
+        BarcodeDetector detector = new BarcodeDetector.Builder(getApplicationContext()).setBarcodeFormats(Barcode.QR_CODE).build();
 
         if (!detector.isOperational()) {
-            System.out.println("*****DEBUG***** Detector di codici a barre non attivabile");
+            System.out.println("*****DEBUG***** Detector di codici a barre non attivabile.");
             return;
         }
 
@@ -104,7 +103,6 @@ public class AddCentralinaActivity extends AppCompatActivity {
                             // Vibrate for 400 milliseconds
                             v.vibrate(100);
 
-                            //String[] barcodeTokenized = barcode.split("/");
                             String msg = "Centralina " + nomeHardwareCentralina + " rilevata.";
                             message.setText(msg);
                         }
@@ -117,10 +115,13 @@ public class AddCentralinaActivity extends AppCompatActivity {
         // Verifichiamo che sia stata concessa la permission CAMERA
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare.");
+
+            // Visualizzazione dialog per ottenere i permessi fotocamera
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CAMERA);
-            return;
+
         } else {
             try {
+                // Avvio fotocamera per la lettura del QRCode
                 cameraSource.start(surfaceView.getHolder());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -131,25 +132,25 @@ public class AddCentralinaActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSION_CAMERA:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(AddCentralinaActivity.this, R.string.permissionGranted, Toast.LENGTH_SHORT).show();
-                    activateCamera();
-                } else {
-                    Toast.makeText(AddCentralinaActivity.this, R.string.permissionNotGranted, Toast.LENGTH_SHORT).show();
-                }
+        if (requestCode == REQUEST_PERMISSION_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(AddCentralinaActivity.this, R.string.permissionGranted, Toast.LENGTH_SHORT).show();
+                activateCamera();
+            } else {
+                Toast.makeText(AddCentralinaActivity.this, R.string.permissionNotGranted, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     public void addNewCentralina(View view) {
-
         if(nomeHardwareCentralina != null){
-            if(!hubName.getText().toString().isEmpty()) {
-                final String nomeUtenteCentralina = hubName.getText().toString();
+            // Caso: QRCode rilevato
 
-                // Write a message to the database
+            if(!nomeUtenteCentralina.getText().toString().isEmpty()) {
+                // Caso: Utente ha inserito il nome della centralina
+                final String nomeUtenteCentralina = this.nomeUtenteCentralina.getText().toString();
+
+                // Inserimento centralina nella sezione dell'utente
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 final DatabaseReference myRef = database.getReference("users/" + uid + "/centraline/" + nomeHardwareCentralina);
 
@@ -164,14 +165,17 @@ public class AddCentralinaActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                        // Ritorno a MainActivity
                         AddCentralinaActivity.this.finish();
                     }
                 });
 
             } else {
+                // Caso: Utente non ha inserito il nome della centralina
                 Toast.makeText(AddCentralinaActivity.this,R.string.nomeUtenteCentralina, Toast.LENGTH_SHORT).show();
             }
         }else{
+            // Caso: nessun QRCode scannerizzato
             Toast.makeText(AddCentralinaActivity.this,R.string.qrCodeNotFound, Toast.LENGTH_SHORT).show();
         }
 

@@ -21,7 +21,7 @@
     <string name="registration_failed">Registrazione fallita.</string>
     <string name="registration_success">Utente creato con successo.</string>
     <string name="verify_mail">Verifica la tua email.</string>
-    <string name="do_registration">Effettua la registrazione.</string>
+    <string name="signInFailure">Controlla le crendenziali inserite o effettua la registrazione</string>
     <string name="nomeUtenteCentralina">Inserire nome della centralina</string>
     <string name="loadingImageFailed">Caricamento immagine fallito</string>
     <string name="loadingImageSuccess">Caricamento immagine avvenuto con successo</string>

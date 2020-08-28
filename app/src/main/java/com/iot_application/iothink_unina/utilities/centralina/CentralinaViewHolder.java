@@ -15,7 +15,7 @@ import com.iot_application.iothink_unina.R;
 public class CentralinaViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
 
-    TextView nomeCentralina;
+    TextView nomeCustomCentralina;
     TextView nomeHardwareCentralina;
     ImageView hubImage;
 
@@ -24,8 +24,7 @@ public class CentralinaViewHolder extends RecyclerView.ViewHolder implements Vie
     public CentralinaViewHolder(View itemView) {
         super(itemView);
 
-        //deviceImage = (ImageView) itemView.findViewById(R.id.deviceImage);
-        nomeCentralina = (TextView) itemView.findViewById(R.id.nomeCentralina);
+        nomeCustomCentralina = (TextView) itemView.findViewById(R.id.nomeCentralina);
         nomeHardwareCentralina = (TextView) itemView.findViewById(R.id.nomeHardwareCentralina);
         hubImage = (ImageView) itemView.findViewById(R.id.hubImage);
 
@@ -36,7 +35,7 @@ public class CentralinaViewHolder extends RecyclerView.ViewHolder implements Vie
 
     @Override
     public void onClick(View view) {
-        System.out.println("****DEBUG**** Item selezionato: " + this.nomeCentralina.getText());
+        System.out.println("****DEBUG**** Item selezionato: " + this.nomeCustomCentralina.getText());
 
         // Start dell'activity relativa alla lista dei devices relativi all'hub selezionato
         Intent intent = new Intent(context, DevicesActivity.class);

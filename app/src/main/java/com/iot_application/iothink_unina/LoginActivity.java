@@ -25,12 +25,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_login);
 
+        // Aggiunta listener pulsanti di login e di registrazione
         findViewById(R.id.login_button).setOnClickListener(this);
         findViewById(R.id.reg_button).setOnClickListener(this);
 
+        // Creazione istanza per l'autenticazione
         mAuth = FirebaseAuth.getInstance();
         email = findViewById(R.id.email_text);
         pass = findViewById(R.id.pass_text);
@@ -38,12 +39,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void createAccountNormal() {
+        // Verifica valori email e password
         if (email.getText().toString().isEmpty() || pass.getText().toString().isEmpty() || pass.getText().toString().length()<6) {
-            if(email.getText().toString().isEmpty() || pass.getText().toString().isEmpty() )
+
+            if(email.getText().toString().isEmpty() || pass.getText().toString().isEmpty() ){
+                // Caso: email o password sono vuote
                 Toast.makeText(getApplicationContext(), R.string.error_log, Toast.LENGTH_SHORT).show();
-            else Toast.makeText(getApplicationContext(), R.string.pwd_short, Toast.LENGTH_SHORT).show();
+            } else {
+                // Caso: password < 6 caratteri
+                Toast.makeText(getApplicationContext(), R.string.pwd_short, Toast.LENGTH_SHORT).show();
+            }
 
         } else {
+
+            // Caso: nessun problema su username e password
             mAuth.createUserWithEmailAndPassword(email.getText().toString(), pass.getText().toString())
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -51,6 +60,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             if (task.isSuccessful()) {
                                 Log.i("Mount:reg", "createUserWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
+
+                                // Invio email di verifica account
                                 user.sendEmailVerification()
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
@@ -62,9 +73,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                     FirebaseUser user = mAuth.getCurrentUser();
                                                     System.out.println("****DEBUG**** USER UID: " + user.getUid());
 
+                                                    // Al completamento della registrazione utente, viene creata l'opportuna sezione
+                                                    // in Firebase Realtime Database
                                                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                                                     DatabaseReference myRef = database.getReference("users/");
                                                     myRef.child(user.getUid()).setValue(0);
+
                                                     Log.d("Firebase Mail:", "Email sent.");
                                                 }
                                             }
@@ -73,8 +87,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             } else {
                                 // If sign up fails, display a message to the user.
                                 Log.i("IoThink registration", "createUserWithEmail:failure", task.getException());
-                                Toast.makeText(LoginActivity.this,R.string.registration_failed,
-                                        Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this,R.string.registration_failed, Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -83,6 +96,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void signInNormal() {
         if (email.getText().toString().isEmpty() || pass.getText().toString().isEmpty()) {
+            // Caso: email o password sono vuote
             Toast.makeText(getApplicationContext(), R.string.error_log, Toast.LENGTH_SHORT).show();
         } else {
             mAuth.signInWithEmailAndPassword(email.getText().toString(), pass.getText().toString())
@@ -91,19 +105,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         public void onComplete(@NonNull Task<AuthResult> task) {
 
                             if (task.isSuccessful()) {
-
+                                // Caso: Login effettuato correttamente
                                 if(mAuth.getCurrentUser()!= null && mAuth.getCurrentUser().isEmailVerified()) {
+
+                                    // Visualizzazione centraline dell'utente
                                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                 } else {
-                                    Toast.makeText(LoginActivity.this,R.string.verify_mail,
-                                            Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LoginActivity.this,R.string.verify_mail, Toast.LENGTH_SHORT).show();
                                 }
 
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w("Mount:sing", "signInWithEmail:failure", task.getException());
-                                Toast.makeText(LoginActivity.this, R.string.do_registration,
-                                        Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, R.string.signInFailure, Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -120,9 +134,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.login_button:
+                //Login con email e password
                 signInNormal();
                 break;
             case R.id.reg_button:
+                //Creazione account
                 createAccountNormal();
                 break;
         }
@@ -130,6 +146,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onBackPressed() {
+        // Evita il ritorno a InitActivity
         moveTaskToBack(true);
     }
 

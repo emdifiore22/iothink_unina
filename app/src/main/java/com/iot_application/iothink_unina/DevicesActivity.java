@@ -59,7 +59,7 @@ public class DevicesActivity extends AppCompatActivity {
     private Button ricercaButton;
     private FirebaseAuth mAuth;
     private String uid;
-    private static RecyclerView rv;
+    private FirebaseDatabase firebaseDatabase;
     private static final int TAKE_PIC_FROM_GALLERY = 1;
     private static final int CROP_ACTIVITY = 2;
     private static final int TAKE_PIC_FROM_CAMERA = 3;
@@ -69,6 +69,7 @@ public class DevicesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
+        System.out.println("****DEBUG**** DEVICES ACTIVITY ON CREATE");
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -78,17 +79,15 @@ public class DevicesActivity extends AppCompatActivity {
         ricercaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Visualizzazione messaggio di ricerca in corso
                 ricercaButton.setText(R.string.ricercaButtonInCorso);
+
+                // Inizio ricerca nuovo dispositivo
                 scansioneNuovoDispositivo();
             }
         });
 
-        System.out.println("****DEBUG**** DEVICES ACTIVITY ON CREATE");
-
-        //SETUP RECYCLER VIEW
-        rv = (RecyclerView) findViewById(R.id.rv);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-
+        firebaseDatabase =  FirebaseDatabase.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();
 
@@ -107,24 +106,16 @@ public class DevicesActivity extends AppCompatActivity {
 
         System.out.println("****DEBUG**** NOME CENTRALINA: " + this.nomeCentralina);
 
+        // Creazione RecyclerViewer per la visualizzazione dei dispositivi aggiuti dall'utente.
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("/users/" + uid + "/centraline/" + this.nomeCentralina + "/devices");
         adapter = new DeviceAdapter(this, dbRef);
-
+        // Setup View
+        RecyclerView rv = (RecyclerView) findViewById(R.id.rv);
+        rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adapter);
 
-        /*
-        TextView noDeviceLabel = (TextView) findViewById(R.id.noDeviceTextView);
-
-        if(adapter.getItemCount() == 0){
-            noDeviceLabel.setText("Nessun device registrato.");
-        }else{
-            noDeviceLabel.setText("");
-        }
-        */
-
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference db = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/");
-
+        // Lettura stanze per la visualizzazione del dialog "Aggiungi Stanze" nel caso in cui queste non siano presenti.
+        DatabaseReference db = this.firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/");
         db.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -152,23 +143,22 @@ public class DevicesActivity extends AppCompatActivity {
     private void scansioneNuovoDispositivo() {
         System.out.println("****DEBUG**** SCANSIONE NUOVI DISPOSITIVI");
 
-        // Inserimento del comando di discovery
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference cmdRef = database.getReference("users/" + this.uid + "/centraline/" + this.nomeCentralina + "/cmd");
-
+        // Invio del comando di discovery alla centralina tramite Firebase
+        final DatabaseReference cmdRef = this.firebaseDatabase.getReference("users/" + this.uid + "/centraline/" + this.nomeCentralina + "/cmd");
         cmdRef.setValue(this.nomeCentralina + "/search/discover");
 
         // Lettura del dispositivo scansionato
-        final DatabaseReference detectedDeviceRef = database.getReference("users/" + this.uid + "/centraline/" + this.nomeCentralina + "/detectedDevice");
+        final DatabaseReference detectedDeviceRef = this.firebaseDatabase.getReference("users/" + this.uid + "/centraline/" + this.nomeCentralina + "/detectedDevice");
+
+        // Listener per la lettura di detectedDevices (inserito dalla centralina)
         detectedDeviceRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                final Device device;
-                device = dataSnapshot.getValue(Device.class);
+
+                final Device device = dataSnapshot.getValue(Device.class);
 
                 if(device != null){
+                    // Caso: detectedDevice rilevato
                     System.out.println("****DEBUG**** Device rilevato: " + device.getBt_addr());
                     ricercaButton.setText(R.string.ricercaButtonStandard);
 
@@ -180,32 +170,32 @@ public class DevicesActivity extends AppCompatActivity {
                             .setMessage(device.getBt_addr())
                             .setTitle("Device Rilevato");
 
-                    final EditText nomeDispositivo = (EditText) view.findViewById(R.id.newDeviceName);
-                    final Spinner roomSpinner = (Spinner) view.findViewById(R.id.roomSpinner);
-
-
-                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                    DatabaseReference db = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/rooms");
+                    //Inizializzazione ArrayList per i nomi delle stanze
                     final ArrayList<String> rooms = new ArrayList<>();
                     rooms.add(0, "Seleziona stanza");
 
+                    // Lettura delle stanze da Firebase
+                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                    DatabaseReference db = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/rooms");
                     db.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            final Spinner roomSpinner = (Spinner) view.findViewById(R.id.roomSpinner);
-                            ArrayAdapter<String> spinnerArrayAdapter = null;
-
+                            // Caricamento delle stanze
                             for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                                 String room = postSnapshot.getKey().toString();
                                 rooms.add(room);
                             }
 
-                            spinnerArrayAdapter = new ArrayAdapter<>(DevicesActivity.this, android.R.layout.simple_spinner_dropdown_item, rooms);
+                            // Impostazione dialog per l'inserimento del dispositivo
+                            final EditText nomeDispositivo = (EditText) view.findViewById(R.id.newDeviceName);
+                            final Spinner roomSpinner = (Spinner) view.findViewById(R.id.roomSpinner);
+                            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(DevicesActivity.this, android.R.layout.simple_spinner_dropdown_item, rooms);
                             roomSpinner.setAdapter(spinnerArrayAdapter);
 
                             // Impostazione del positive button
                             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
+
                                     // User clicked OK button
                                     System.out.println("****DEBUG**** User clicked OK button");
                                     TextView noDeviceView = (TextView) findViewById(R.id.noDeviceTextView);
@@ -217,11 +207,13 @@ public class DevicesActivity extends AppCompatActivity {
                                         device.setNomeCustom(nomeDispositivo.getText().toString());
                                         device.setRoom(stanzaDispositivo);
                                         device.setStatus("off");
-                                        DatabaseReference ref = database.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
 
+                                        // Inserimento del nuovo disposivo e rimozione della struttura detectedDevice
+                                        DatabaseReference ref = DevicesActivity.this.firebaseDatabase.getReference("users/" + DevicesActivity.this.uid + "/centraline/" + device.getCentralina() + "/devices/" + device.getBt_addr());
                                         ref.setValue(device);
-
                                         detectedDeviceRef.removeValue();
+
+                                        // Impostazione comando centralina in idle.
                                         cmdRef.setValue("idle");
                                     }else{
                                         Toast.makeText(DevicesActivity.this, R.string.select_room_failed, Toast.LENGTH_SHORT).show();
@@ -268,6 +260,7 @@ public class DevicesActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Creazione menu in Top Bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_activity_devices, menu);
         return true;
@@ -285,12 +278,18 @@ public class DevicesActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.addRoom:
+                // Visualizzazione dialog aggiungi stanza
                 showAddRoomDialog();
                 return true;
             case R.id.addHubImage:
+
+                // Visualizzazione menu per l'impostazione dell'immagine centralina
                 showImagePickerDialog();
                 return true;
+
             case R.id.action_search_device:
+
+                // Impostazione meccanismo di ricerca dei dispositivi
                 SearchView searchView = (SearchView) item.getActionView();
                 searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -324,15 +323,20 @@ public class DevicesActivity extends AppCompatActivity {
                 System.out.println("****DEBUG**** È stato cliccato " + options[which]);
 
                 if(options[which].equals("Fotocamera")){
+
+                    // Caso: caricamento tramite fotocamera
                     if (ActivityCompat.checkSelfPermission(DevicesActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                         System.out.println("*****DEBUG***** Dare all'applicazione l'autorizzazione ad accedere alla fotocamera del cellulare.");
+
+                        // Visualizzazione dialog richiesta permessi fotocamera
                         ActivityCompat.requestPermissions(DevicesActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CAMERA);
-                        return;
                     } else {
                         pickImageFromCamera();
                     }
 
                 }else{
+
+                    // Caso: caricamento tramite galleria
                     pickImageFromGallery();
                 }
             }
@@ -363,126 +367,68 @@ public class DevicesActivity extends AppCompatActivity {
         System.out.println("****DEBUG**** Result code : " + resultCode);
         Uri selectedImage;
         if(resultCode == Activity.RESULT_OK){
+            // Caso: caricamento immagine avvenuto con successo
+            Bundle extras = data.getExtras();
             switch (requestCode){
                 case TAKE_PIC_FROM_GALLERY:
-                    selectedImage = data.getData();
-                    if(data != null){
-                        Bundle extras = data.getExtras();
-                        // get the cropped bitmap
-                        Bitmap selectedBitmap = null;
-                        try {
-                            selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
-                            Bitmap resized = Bitmap.createScaledBitmap(selectedBitmap, 300, 300, true);
+                    // Caso: immagine da galleria
 
-                            StorageReference mStorageRef;
-                            mStorageRef = FirebaseStorage.getInstance().getReference();
-                            StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            resized.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                            byte[] data_byte = baos.toByteArray();
-                            UploadTask uploadTask = riversRef.putBytes(data_byte);
-                            uploadTask.addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                }
-                            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
-                                    toast.show();
-                                }
-                            });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    selectedImage = data.getData();
+                    try {
+                        Bitmap selectedBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                        Bitmap resized = Bitmap.createScaledBitmap(selectedBitmap, 300, 300, true);
+
+                        // Caricamento immagine su Firebase Storage
+                        StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
+                        StorageReference imageRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        resized.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                        byte[] data_byte = baos.toByteArray();
+                        UploadTask uploadTask = imageRef.putBytes(data_byte);
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+
                     break;
                 case TAKE_PIC_FROM_CAMERA:
-                    selectedImage = data.getData();
-                    if(data != null){
-                        Bundle extras = data.getExtras();
-                        // get the cropped bitmap
-                        Bitmap selectedBitmap = extras.getParcelable("data");
-                        StorageReference mStorageRef;
-                        mStorageRef = FirebaseStorage.getInstance().getReference();
-                        StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                        byte[] data_byte = baos.toByteArray();
-                        UploadTask uploadTask = riversRef.putBytes(data_byte);
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
-                                toast.show();
-                            }
-                        });
-                    }
-                    //performCrop(selectedImage);
-                    break;
-                case CROP_ACTIVITY:
-                    /*
-                    if(data != null){
-                        Bundle extras = data.getExtras();
-                        // get the cropped bitmap
-                        Bitmap selectedBitmap = extras.getParcelable("data");
-                        StorageReference mStorageRef;
-                        mStorageRef = FirebaseStorage.getInstance().getReference();
-                        StorageReference riversRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                        byte[] data_byte = baos.toByteArray();
-                        UploadTask uploadTask = riversRef.putBytes(data_byte);
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
-                                toast.show();
-                            }
-                        });
-                    }
-                    break;
+                    // Caso: immagine da fotocamera
 
-                     */
+                    Bitmap selectedBitmap = extras.getParcelable("data");
+
+                    // Caricamento immagine su Firebase Storage
+                    StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
+                    StorageReference imageRef = mStorageRef.child("users/" + uid + "/" + nomeCentralina + ".png");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    selectedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                    byte[] data_byte = baos.toByteArray();
+                    UploadTask uploadTask = imageRef.putBytes(data_byte);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Toast toast = Toast.makeText(DevicesActivity.this, R.string.loadingImageSuccess, Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    });
+
+                    break;
             }
         }else{
             Toast toast = Toast.makeText(this, R.string.loadingImageFailed, Toast.LENGTH_SHORT);
-            toast.show();
-        }
-    }
-
-    private void performCrop(Uri picUri) {
-        try {
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-            // indicate image type and Uri
-            cropIntent.setDataAndType(picUri, "image/*");
-            // set crop properties here
-            cropIntent.putExtra("crop", true);
-            // indicate aspect of desired crop
-            cropIntent.putExtra("aspectX", 1);
-            cropIntent.putExtra("aspectY", 1);
-            cropIntent.putExtra("scale", true);
-            // indicate output X and Y
-            cropIntent.putExtra("outputX", 128);
-            cropIntent.putExtra("outputY", 128);
-            // retrieve data on return
-            cropIntent.putExtra("return-data", true);
-            // start the activity - we handle returning in onActivityResult
-            startActivityForResult(cropIntent, CROP_ACTIVITY);
-        }
-        // respond to users whose devices do not support the crop action
-        catch (ActivityNotFoundException anfe) {
-            // display an error message
-            String errorMessage = "Whoops - your device doesn't support the crop action!";
-            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
             toast.show();
         }
     }
@@ -497,15 +443,17 @@ public class DevicesActivity extends AppCompatActivity {
         // Impostazione del positive button
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // Controlli ed inserimento su Firebase
+
+                // EditText per l'inserimento del nome della stanza da inserire
                 EditText roomNameView = (EditText) view.findViewById(R.id.roomName);
                 final String roomName = roomNameView.getText().toString().toLowerCase();
                 System.out.println("****DEBUG**** Room: " + roomName );
 
+                // Controlli ed inserimento su Firebase
                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
                 final DatabaseReference dbRef = firebaseDatabase.getReference("users/" + uid + "/centraline/" + nomeCentralina + "/rooms");
-
                 final ArrayList<String> rooms = new ArrayList<>();
+                // Aggiunta listener per il prelievo delle stanze da Firebase
                 dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -526,6 +474,9 @@ public class DevicesActivity extends AppCompatActivity {
                         }else{
                             System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
                             if(!rooms.contains(roomName)){
+                                // Caso: nome stanza non presente
+
+                                // Aggiunta stanza
                                 dbRef.child(roomName).setValue(0).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
@@ -560,17 +511,13 @@ public class DevicesActivity extends AppCompatActivity {
         dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+                // Ritorno a MainActivity per evitare la ricerca di un nuovo dispositivo senza aver mai inserito una stanza.
                 DevicesActivity.this.finish();
             }
         });
 
         dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
-    }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        //DevicesActivity.this.finish();
+        dialog.show();
     }
 }

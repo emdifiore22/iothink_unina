@@ -35,20 +35,19 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
     private ArrayList<Centralina> centraline;
     private ArrayList<Centralina> centralineFull;
 
-    public CentralinaAdapter(Context c, ArrayList<Centralina> centraline) {
-        this.c = c;
-        this.centraline = centraline;
-        centralineFull = new ArrayList<>(centraline);
-    }
 
     public CentralinaAdapter(Context c, DatabaseReference dbRef) {
         this.c = c;
         this.centraline = new ArrayList<>();
         centralineFull = new ArrayList<>();
 
+        // Aggiunta listener per la lettura delle centraline dal database
         dbRef.addValueEventListener(new ValueEventListener() {
             public void onDataChange(DataSnapshot snapshot) {
+                // Re-inizializzazione del ArrayList centraline
                 CentralinaAdapter.this.centraline.clear();
+
+                // Caricamento ArrayList centraline
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
 
                     String nomeHardware = postSnapshot.getKey().toString();
@@ -62,12 +61,14 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
                     centralineFull.add(centralina);
                 }
 
+                // Visualizzazione messaggio "nessun hub registrato" nel caso in cui non ci siano centraline
                 TextView noHubLabel = (TextView) ((Activity) CentralinaAdapter.this.c).findViewById(R.id.noHubTextView);
-
                 if(centraline.isEmpty()){
-                    noHubLabel.setText("Nessun Hub registrato.");
+                    noHubLabel.setText("Nessun centralina registrato.");
                 } else {
-                    noHubLabel.setText("");
+                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    noHubLabel.setText("Centraline di \n" + currentUser.getEmail());
                 }
 
                 notifyDataSetChanged();
@@ -92,8 +93,11 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
 
         final Centralina c = centraline.get(position);
 
-        holder.nomeCentralina.setText(c.getNomeCustom());
+        // Visualizzazione nomeCustomCentralina e nomeHardwareCentralina
+        holder.nomeCustomCentralina.setText(c.getNomeCustom());
         holder.nomeHardwareCentralina.setText(c.getNomeHardware());
+
+        // Caricamento immagine associata alla centralina
         setHubImage(holder);
     }
 
@@ -103,7 +107,7 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
         FirebaseUser user = mAuth.getCurrentUser();
         String uid = user.getUid();
 
-        // Create a storage reference from our app
+        // Caricamento immagine centralina da Firebase Storage
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         StorageReference imageRef = storageRef.child("users/" + uid + "/" + holder.nomeHardwareCentralina.getText().toString() + ".png");
 
@@ -112,7 +116,6 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
         imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
-                // Data for "images/island.jpg" is returns, use this as needed
                 System.out.println("+***DEBUG**** Caricamento immagine effettuato con successo");
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 holder.hubImage.setImageBitmap(bitmap);
@@ -120,7 +123,7 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
+
                 System.out.println("+***DEBUG**** Caricamento immagine fallito");
                 Drawable dr = c.getResources().getDrawable(R.drawable.home_icon);
                 holder.hubImage.setImageDrawable(dr);
@@ -138,6 +141,7 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
         return exampleFilter;
     }
 
+    // Implementazione funzione ricerca tra le centraline in base all'input dell'utente
     private Filter exampleFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
