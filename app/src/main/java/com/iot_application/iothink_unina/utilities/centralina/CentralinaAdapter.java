@@ -64,7 +64,7 @@ public class CentralinaAdapter extends RecyclerView.Adapter<CentralinaViewHolder
                 // Visualizzazione messaggio "nessun hub registrato" nel caso in cui non ci siano centraline
                 TextView noHubLabel = (TextView) ((Activity) CentralinaAdapter.this.c).findViewById(R.id.noHubTextView);
                 if(centraline.isEmpty()){
-                    noHubLabel.setText("Nessun centralina registrato.");
+                    noHubLabel.setText("Nessuna centralina registrata");
                 } else {
                     FirebaseAuth mAuth = FirebaseAuth.getInstance();
                     FirebaseUser currentUser = mAuth.getCurrentUser();

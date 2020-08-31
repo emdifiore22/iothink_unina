@@ -1,4 +1,4 @@
-package com.iot_application.iothink_unina;
+package com.iot_application.iothink_unina.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 

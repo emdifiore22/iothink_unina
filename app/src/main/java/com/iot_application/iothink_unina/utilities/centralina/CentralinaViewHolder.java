@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.iot_application.iothink_unina.DevicesActivity;
+import com.iot_application.iothink_unina.activities.DevicesActivity;
 import com.iot_application.iothink_unina.R;
 
 public class CentralinaViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

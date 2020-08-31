@@ -1,4 +1,4 @@
-package com.iot_application.iothink_unina;
+package com.iot_application.iothink_unina.activities;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.iot_application.iothink_unina.R;
 import com.iot_application.iothink_unina.utilities.centralina.CentralinaAdapter;
 
 public class MainActivity extends AppCompatActivity {

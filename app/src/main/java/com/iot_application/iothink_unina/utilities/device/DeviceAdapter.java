@@ -231,7 +231,6 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceViewHolder> implem
                                     progressDialog.dismiss();
                                     ref_device_status.removeEventListener(this);
                                 }
-
                             }
 
                             @Override

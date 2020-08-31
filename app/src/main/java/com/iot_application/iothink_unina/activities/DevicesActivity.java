@@ -1,4 +1,4 @@
-package com.iot_application.iothink_unina;
+package com.iot_application.iothink_unina.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -45,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.iot_application.iothink_unina.R;
 import com.iot_application.iothink_unina.utilities.device.Device;
 import com.iot_application.iothink_unina.utilities.device.DeviceAdapter;
 
@@ -64,6 +64,7 @@ public class DevicesActivity extends AppCompatActivity {
     private static final int CROP_ACTIVITY = 2;
     private static final int TAKE_PIC_FROM_CAMERA = 3;
     private final int REQUEST_PERMISSION_CAMERA = 4;
+    private boolean roomEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,8 +122,10 @@ public class DevicesActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(!snapshot.child("rooms").exists()){
                     System.out.println("****DEBUG**** ROOMS IS EMPTY");
+                    roomEmpty = true;
                     showAddRoomDialog();
                 }else{
+                    roomEmpty = false;
                     System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
                 }
             }
@@ -469,8 +472,10 @@ public class DevicesActivity extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     Toast.makeText(DevicesActivity.this, R.string.add_room_success, Toast.LENGTH_SHORT).show();
+                                    roomEmpty = false;
                                 }
                             });
+
                         }else{
                             System.out.println("****DEBUG**** ROOMS IS NOT EMPTY");
                             if(!rooms.contains(roomName)){
@@ -481,6 +486,7 @@ public class DevicesActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         Toast.makeText(DevicesActivity.this, R.string.add_room_success, Toast.LENGTH_SHORT).show();
+                                        roomEmpty = false;
                                     }
                                 });
                             }else{
@@ -512,7 +518,9 @@ public class DevicesActivity extends AppCompatActivity {
             @Override
             public void onCancel(DialogInterface dialog) {
                 // Ritorno a MainActivity per evitare la ricerca di un nuovo dispositivo senza aver mai inserito una stanza.
-                DevicesActivity.this.finish();
+                if(roomEmpty){
+                    DevicesActivity.this.finish();
+                }
             }
         });
 
