@@ -218,11 +218,14 @@ public class DevicesActivity extends AppCompatActivity {
 
                                         // Impostazione comando centralina in idle.
                                         cmdRef.setValue("idle");
+
                                     }else{
+                                        detectedDeviceRef.removeValue();
                                         Toast.makeText(DevicesActivity.this, R.string.select_room_failed, Toast.LENGTH_SHORT).show();
                                     }
 
                                     dialog.dismiss();
+
                                 }
                             });
 
@@ -231,7 +234,6 @@ public class DevicesActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialog, int id) {
                                     // User cancelled the dialog
                                     System.out.println("****DEBUG**** User cancelled the dialog");
-
                                     dialog.dismiss();
                                 }
                             });
